@@ -7,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Import modules
-from ingestion.linkedin import ld_scraper
+from ingestion.linkedin.linkedin_scraper import ld_scraper
 
 # Setup
 ROOT = Path(__file__).parent
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 # FastAPI app
 app = FastAPI(
-    title="CrewAI Host Test API",
-    description="API for pipeline execution and web scraping",
+    title="Data Platform Host",
+    description="API for malaysian jobs web scraping",
     version="1.0.0"
 )

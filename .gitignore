@@ -1,2 +1,13 @@
+# Ignore virtual environment containing dependencies
 .venv
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore local application logs
+logs/
+*.log
+
+# Ignore local environment secrets
 .env
