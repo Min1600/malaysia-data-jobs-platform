@@ -169,5 +169,3 @@ def ld_daily_scraper(job_type):
         max_offset=None,
     )
     print(f"\n✨ Daily run complete. Successfully captured {total_collected} linkedin {job_type} listings!")
-
-ld_scraper('Data Analyst')
