@@ -1,0 +1,19 @@
+name: Sync to Hugging Face Hub
+on:
+  push:
+    branches: [main] # Change this to 'master' if your main branch is called master
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: huggingface/hub-sync@v0.1.0
+        with:
+          github_repo_id: ${{ github.repository }}
+          huggingface_repo_id: Amin1600/Web_Scraper_Server
+          hf_token: ${{ secrets.HF_TOKEN }}
+          repo_type: space
+          space_sdk: docker
