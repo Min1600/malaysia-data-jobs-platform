@@ -1,8 +1,8 @@
 ---
 title: Web Scraper 
 emoji: 📊
-colorFrom: orange
-colorTo: orange
+colorFrom: green
+colorTo: green
 sdk: docker
 app_port: 7860
 app_file: main.py
