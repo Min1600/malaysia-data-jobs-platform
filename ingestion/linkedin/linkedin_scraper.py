@@ -12,7 +12,7 @@ HEADERS = {
 }
 
 BASE_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
-ABS_PATH = "/home/aminh/workspace/web_scraper/data/raw/linkedin"
+ABS_PATH = "./data/raw/linkedin"
 
 
 def get_jobs(response):
@@ -95,9 +95,9 @@ def scraping(job_cards, abs_path, total_collected, s_type):
         }
 
         # save to jsonl file
-        if s_type = 'total':
+        if s_type == 'total':
             filename = f"{abs_path}/historic.jsonl"
-        elif s_type = 'daily':
+        elif s_type == 'daily':
             filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
 
         with open(filename, "a", encoding="utf-8") as f:
@@ -107,7 +107,7 @@ def scraping(job_cards, abs_path, total_collected, s_type):
     return total_collected
 
 
-def _run_scrape(job_type, extra_params=None, max_offset=975, s_type):
+def _run_scrape(job_type, s_type, extra_params=None, max_offset=975):
     """
     Shared pagination engine for LinkedIn scraping.
     
@@ -157,16 +157,17 @@ def _run_scrape(job_type, extra_params=None, max_offset=975, s_type):
 
 
 def ld_scraper(job_type):
-    total_collected = _run_scrape(job_type, max_offset=975,'total')
+    total_collected = _run_scrape(job_type, s_type='total', max_offset=975)
     print(f"\n✅ Full run complete. Successfully captured {total_collected} linkedin {job_type} listings!")
 
 
 def ld_daily_scraper(job_type):
     total_collected = _run_scrape(
         job_type,
+        s_type='daily',
         extra_params={"f_TPR": "r86400"},  # 🌟 24-hour lookback
         max_offset=None,
-        'daily'
     )
     print(f"\n✨ Daily run complete. Successfully captured {total_collected} linkedin {job_type} listings!")
 
+ld_scraper('Data Analyst')
