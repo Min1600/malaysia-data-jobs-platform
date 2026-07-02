@@ -1,4 +1,4 @@
-title: CrewAI Server
+title: Web Scraper 
 emoji: 📊
 colorFrom: orange
 colorTo: orange
