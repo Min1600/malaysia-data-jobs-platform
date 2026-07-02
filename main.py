@@ -29,3 +29,7 @@ app = FastAPI(
     description="API for malaysian jobs web scraping",
     version="1.0.0"
 )
+
+@app.get("/")
+async def root():
+    return {"Hello": "World"}
