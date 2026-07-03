@@ -25,7 +25,7 @@ def get_jobs(response):
 
     return job_cards
 
-def scraping(job_cards, abs_path, total_collected, s_type):
+def scraper(job_cards, abs_path, total_collected, frequency):
 
     # iterate over each HTML container of elements to get data from one job at a time
     for card in job_cards:
@@ -95,9 +95,9 @@ def scraping(job_cards, abs_path, total_collected, s_type):
         }
 
         # save to jsonl file
-        if s_type == 'total':
+        if frequency == 'all time':
             filename = f"{abs_path}/historic.jsonl"
-        elif s_type == 'daily':
+        elif frequency == 'daily':
             filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
 
         with open(filename, "a", encoding="utf-8") as f:
@@ -107,7 +107,7 @@ def scraping(job_cards, abs_path, total_collected, s_type):
     return total_collected
 
 
-def _run_scrape(job_type, s_type, extra_params=None, max_offset=975):
+def _run_scrape(job_type, frequency, extra_params=None, max_offset=975):
     """
     Shared pagination engine for LinkedIn scraping.
     
@@ -142,7 +142,7 @@ def _run_scrape(job_type, s_type, extra_params=None, max_offset=975):
         print(f"Collected {len(job_cards)} new jobs on Page {page_counter}")
 
         total_collected += len(job_cards)
-        total_collected = scraping(job_cards, ABS_PATH, total_collected, s_type)
+        total_collected = scraper(job_cards, ABS_PATH, total_collected, frequency)
 
         # stop if the site returns nothing more (important for the unbounded case,
         # otherwise ld_daily_scraper loops forever once jobs run out)
@@ -157,14 +157,14 @@ def _run_scrape(job_type, s_type, extra_params=None, max_offset=975):
 
 
 def ld_scraper(job_type):
-    total_collected = _run_scrape(job_type, s_type='total', max_offset=975)
+    total_collected = _run_scrape(job_type, frequency='all time', max_offset=975)
     print(f"\n✅ Full run complete. Successfully captured {total_collected} linkedin {job_type} listings!")
 
 
 def ld_daily_scraper(job_type):
     total_collected = _run_scrape(
         job_type,
-        s_type='daily',
+        frequency='daily',
         extra_params={"f_TPR": "r86400"},  # 🌟 24-hour lookback
         max_offset=None,
     )
