@@ -131,8 +131,8 @@ def get_jobs(response, abs_path, total_collected, page_counter, frequency, seen_
             json_line = json.dumps(raw_record, ensure_ascii=False)
             f.write(json_line + "\n")
 
-    print(copies)
     print(f"Collected {total_collected} new jobs on Page {page_counter}")
+
     return total_collected
 
 def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
@@ -161,7 +161,6 @@ def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
             break
             
         total_collected += get_jobs(response, ABS_PATH, total_collected, page_counter, frequency, seen_ids)
-        print(total_collected)
         page_counter += 1
         time.sleep(random.uniform(4.0, 8.0))
 
@@ -169,10 +168,10 @@ def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
 
 def js_scraper(job_type, location):
     total_collected = _run_scrape(job_type, location)
-    print(f"\n✅ Full run complete. Successfully captured {total_collected} jobstreet {job_type} listings!")
+    print(f"\n✅ Full run complete. Successfully saved {total_collected} jobstreet {job_type} listings!")
 
 def js_daily_scraper(job_type, location):
     total_collected = _run_scrape(job_type, location, daily)
-    print(f"\n✨ Daily run complete. Successfully captured {total_collected} jobstreet {job_type} listings!")
+    print(f"\n✨ Daily run complete. Successfully saved {total_collected} jobstreet {job_type} listings!")
 
 #js_daily_scraper('Data Analyst', 'Kuala Lunpur')
