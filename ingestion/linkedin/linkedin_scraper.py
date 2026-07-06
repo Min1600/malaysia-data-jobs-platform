@@ -14,6 +14,7 @@ HEADERS = {
 BASE_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
 ABS_PATH = "./data/raw/linkedin"
 
+daily,weekly,monthly = "r86400","r604800","r2592000"
 
 def get_jobs(response):
 
@@ -95,9 +96,9 @@ def scraper(job_cards, abs_path, total_collected, frequency):
         }
 
         # save to jsonl file
-        if frequency == 'all time':
+        if frequency is None:
             filename = f"{abs_path}/historic.jsonl"
-        elif frequency == 'daily':
+        else:
             filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
 
         with open(filename, "a", encoding="utf-8") as f:
@@ -107,7 +108,7 @@ def scraper(job_cards, abs_path, total_collected, frequency):
     return total_collected
 
 
-def _run_scrape(job_type, frequency, extra_params=None, max_offset=975):
+def _run_scrape(job_type, frequency, location, extra_params=None, max_offset=975):
     """
     Shared pagination engine for LinkedIn scraping.
     
@@ -124,7 +125,7 @@ def _run_scrape(job_type, frequency, extra_params=None, max_offset=975):
 
         params = {
             "keywords": job_type,
-            "location": "Kuala Lumpur",
+            "location": location,
             "start": start_offset,
         }
         if extra_params:
@@ -156,16 +157,25 @@ def _run_scrape(job_type, frequency, extra_params=None, max_offset=975):
     return total_collected
 
 
-def ld_scraper(job_type):
-    total_collected = _run_scrape(job_type, frequency='all time', max_offset=975)
-    print(f"\n✅ Full run complete. Successfully captured {total_collected} linkedin {job_type} listings!")
+def ld_scraper(job_type, frequency = None, location = 'Kuala Lumpur'):
 
+    assert frequency in ['daily', 'weekly', 'monthly', None], 'frequency parameter needs to be daily, weekly, monthly or None'
 
-def ld_daily_scraper(job_type):
-    total_collected = _run_scrape(
-        job_type,
-        frequency='daily',
-        extra_params={"f_TPR": "r86400"},  # 🌟 24-hour lookback
-        max_offset=None,
-    )
-    print(f"\n✨ Daily run complete. Successfully captured {total_collected} linkedin {job_type} listings!")
+    if frequency is None:
+        
+        total_collected = _run_scrape(job_type, location, frequency,  extra_params = None, max_offset=975)
+        print(f"\n✅ Successfully saved all {job_type} job listings from linkedin. Captured {total_collected} jobs listings!")
+    
+    elif frequency in [daily, weekly, monthly]:
+
+        # phrase to use based on scraping cut off time
+        timelines= {
+            daily: "last 24 hours",
+            weekly: "last week",
+            monthly: "last month"
+        }
+
+        total_collected = _run_scrape(job_type, location, frequency, extra_params={"f_TPR": frequency}, max_offset = None)
+
+        freq_type = timelines[frequency]
+        print(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings from linkedin, posted within the {freq_type}")

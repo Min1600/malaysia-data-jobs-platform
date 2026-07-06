@@ -20,13 +20,18 @@ monthly = 31
 BASE_URL = f"https://my.jobstreet.com/data-analyst-jobs/in-Kuala-Lumpur"
 ABS_PATH = "/home/aminh/workspace/web_scraper/data/raw/jobstreet"
 
+
+
+
 def get_total_pages(job_type, location = "Kuala Lumpur",frequency = None):
+
     params = {
     "keyword" : job_type,
     "where" : location,
     "daterange": frequency,
     "page": 1
     }
+
     response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome")
 
     if response.status_code != 200:
@@ -45,6 +50,9 @@ def get_total_pages(job_type, location = "Kuala Lumpur",frequency = None):
     pages = math.ceil(int(total_jobs) / 30)
 
     return pages
+
+
+
 
 def get_jobs(response, abs_path, total_collected, page_counter, frequency, seen_ids):
     copies = 0
@@ -121,10 +129,10 @@ def get_jobs(response, abs_path, total_collected, page_counter, frequency, seen_
             "raw_html": str(desc_el) if desc_el else ""
         }
 
-        if frequency == 1:
-            filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
-        else:
+        if frequency is None:
             filename = f"{abs_path}/historic.jsonl"
+        else:
+            filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
 
         # save to jsonl file
         with open(filename, "a", encoding="utf-8") as f:
@@ -134,6 +142,9 @@ def get_jobs(response, abs_path, total_collected, page_counter, frequency, seen_
     print(f"Collected {total_collected} new jobs on Page {page_counter}")
 
     return total_collected
+
+
+
 
 def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
 
@@ -166,12 +177,21 @@ def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
 
     return total_collected
 
-def js_scraper(job_type, location):
-    total_collected = _run_scrape(job_type, location)
-    print(f"\n✅ Full run complete. Successfully saved {total_collected} jobstreet {job_type} listings!")
+def js_scraper(job_type, location, frequency):
 
-def js_daily_scraper(job_type, location):
-    total_collected = _run_scrape(job_type, location, daily)
-    print(f"\n✨ Daily run complete. Successfully saved {total_collected} jobstreet {job_type} listings!")
+    assert frequency in ['daily', 'weekly', 'monthly', None], 'frequency parameter needs to be daily, weekly, monthly or None'
+
+    if frequency is None:
+        total_collected = _run_scrape(job_type, location)
+        print(f"\n✅ Full run complete. Successfully saved {total_collected} {job_type} jobs from jobstreet listings!")
+
+    elif frequency in [daily, weekly, biweekly, monthly]:
+        total_collected = _run_scrape(job_type, location, frequency)
+        print(f"\n✨ Jobs from the last {frequency} days are collected. ")
+        print(f"✨ Successfully saved {total_collected} {job_type} jobs from jobstreet listings!")
+
+    else:
+        print('Error, input needs to be 1,7,14,31 or None')
+    
 
 #js_daily_scraper('Data Analyst', 'Kuala Lunpur')
