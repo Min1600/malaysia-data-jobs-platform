@@ -17,9 +17,7 @@ BASE_URL = f"https://my.jobstreet.com/data-analyst-jobs/in-Kuala-Lumpur"
 ABS_PATH = "/home/aminh/workspace/web_scraper/data/raw/jobstreet"
 
 # scraping timeline, if None then scrape all job listings
-daily = 1
-weekly = 7
-monthly = 31
+daily, weekly, monthly = 1,7,31
 
 def get_total_pages(job_type, location = "Kuala Lumpur",frequency = None):
     """
