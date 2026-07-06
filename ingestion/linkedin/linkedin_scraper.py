@@ -11,12 +11,26 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9"
 }
 
+# url for website to be scraped and path to save ingested data into
 BASE_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
-ABS_PATH = "./data/raw/linkedin"
+ABS_PATH = "/home/aminh/workspace/web_scraper/data/raw/linkedin"
 
+# set linkedin to have 25 jobs per page, as linkedin stores up to 1000 jobs
+PAGE_SIZE = 25
+
+# scraping timeline, if None then scrape all job listings
 daily,weekly,monthly = "r86400","r604800","r2592000"
 
 def get_jobs(response):
+    """
+    Scrapes the data containing the job listings from the response data
+
+    Args:
+        response: requested page data
+
+    Returns:
+        Number of job listings
+    """
 
     # use beautiful soup to get text from page
     soup = BeautifulSoup(response.text, "html.parser")
@@ -26,8 +40,23 @@ def get_jobs(response):
 
     return job_cards
 
-def scraper(job_cards, abs_path, total_collected, frequency):
 
+
+
+def scraper(job_cards, filename, total_collected, seen_ids):
+    """
+    Scrape job listings from jobstreet and save them to a jsonl file
+
+    Args:
+        job_cards: All job listings from jobstreet webpage
+        filename: name and location of file to save the scraped data
+        total_collected: number of jobs collected so far
+        seen_ids: set containing jobs ids of jobs already saved
+
+    Returns:
+        Total number of jobs collected
+    """
+    
     # iterate over each HTML container of elements to get data from one job at a time
     for card in job_cards:
 
@@ -40,6 +69,14 @@ def scraper(job_cards, abs_path, total_collected, frequency):
         job_id_match = re.search(r'-(\d+)(?:\b|$)', job_url)
         job_id = job_id_match.group(1) if job_id_match else job_url.split("-")[-1]
 
+        # locates any repeated jobs
+        if job_id in seen_ids:
+            total_collected -= 1
+            continue
+        
+        # removes repeated jobs by adding to set() data type
+        seen_ids.add(job_id)
+
         # Use job_id to get url for full description of job
         details_url = f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{job_id}"
 
@@ -48,7 +85,7 @@ def scraper(job_cards, abs_path, total_collected, frequency):
         full_desc = ""
         desc_el = None
 
-        # if no response from description page continue
+        # if no response from description page skip job listing
         if detail_res.status_code == 200:
             detail_soup = BeautifulSoup(detail_res.text, "html.parser")
 
@@ -96,11 +133,6 @@ def scraper(job_cards, abs_path, total_collected, frequency):
         }
 
         # save to jsonl file
-        if frequency is None:
-            filename = f"{abs_path}/historic.jsonl"
-        else:
-            filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
-
         with open(filename, "a", encoding="utf-8") as f:
             json_line = json.dumps(raw_record, ensure_ascii=False)
             f.write(json_line + "\n")
@@ -108,65 +140,104 @@ def scraper(job_cards, abs_path, total_collected, frequency):
     return total_collected
 
 
-def _run_scrape(job_type, frequency, location, extra_params=None, max_offset=975):
+
+
+def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs = 975):
     """
-    Shared pagination engine for LinkedIn scraping.
-    
-    max_offset=None means run until the site stops returning results
-    (used for the daily/unbounded scrape).
+    Reqeuests data from linkedin webpage
+
+    Args:
+        job_type: the title of job 
+        date_range: when job was listed, defaults to None, meaning all job listings available
+        location: where the job is located, defaults to Kuala Lumpur
+        max_jobs: linkedin stores up to 1000 jobs
+
+    Returns:
+        Total number of jobs collected
     """
+
     assert type(job_type) is str, "input for job_type must be a string"
 
     start_offset = 0
     page_counter = 1
     total_collected = 0
+    seen_ids = set()
 
-    while max_offset is None or start_offset <= max_offset:
+    # requests data as long as there are pages to scrape
+    while max_jobs is None or start_offset <= max_jobs:
 
+        # request specific page from linkedin website
         params = {
             "keywords": job_type,
             "location": location,
             "start": start_offset,
+            "f_TPR": date_range
         }
-        if extra_params:
-            params.update(extra_params)
 
         print(f"🔄 Requesting Page {page_counter} (Offset start={start_offset})...")
 
+        # requests data from jobstreet
         response = requests.get(BASE_URL, params=params, headers=HEADERS)
 
+        # if no response end loop
         if response.status_code != 200:
             print(f"🛑 Received a non-200 status code: {response.status_code}. Stopping task.")
             break
 
+        # collects all job listings
         job_cards = get_jobs(response)
-        print(f"Collected {len(job_cards)} new jobs on Page {page_counter}")
 
+        # updates job listings collected
         total_collected += len(job_cards)
-        total_collected = scraper(job_cards, ABS_PATH, total_collected, frequency)
 
-        # stop if the site returns nothing more (important for the unbounded case,
-        # otherwise ld_daily_scraper loops forever once jobs run out)
+        # Save jobs with a timeline scraped on the same day into its own file
+        if date_range is None:
+            filename = f"{abs_path}/historic.jsonl"
+        else:
+            filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
+
+        # get total number of jobs on current page and save data to jsonl file
+        total_collected = scraper(job_cards, filename, total_collected, seen_ids)
+
+        # stop if the site returns nothing more
         if len(job_cards) == 0:
             break
 
-        start_offset += len(job_cards)
+        print(f"Collected {total_collected} new jobs on Page {page_counter}")
+
+        # increase offset by eaxctly 25, as job cards are not reliable
+        start_offset += PAGE_SIZE
         page_counter += 1
         time.sleep(random.uniform(4.0, 8.0))  # Anti-bot mitigation
 
     return total_collected
 
 
-def ld_scraper(job_type, frequency = None, location = 'Kuala Lumpur'):
 
-    assert frequency in ['daily', 'weekly', 'monthly', None], 'frequency parameter needs to be daily, weekly, monthly or None'
 
-    if frequency is None:
-        
-        total_collected = _run_scrape(job_type, location, frequency,  extra_params = None, max_offset=975)
+def ld_scraper(job_type, date_range = None, location = 'Kuala Lumpur'):
+    """
+    Runs web scraper
+
+    Args:
+        job_type: the title of job 
+        date_range: when job was listed, defaults to None, meaning all job listings available
+        location: where the job is located, defaults to Kuala Lumpur
+
+    Returns:
+        nothing
+    """
+    assert date_range in ['daily', 'weekly', 'monthly', None], 'date_range parameter needs to be daily, weekly, monthly or None'
+
+    # no date_range given means scrape all available data on linkedin webapge
+    if date_range is None:
+
+        # run the linkedin job scraper and get total number of jobs collected
+        total_collected = _run_scrape(job_type, location, date_range, max_jobs=975)
         print(f"\n✅ Successfully saved all {job_type} job listings from linkedin. Captured {total_collected} jobs listings!")
     
-    elif frequency in [daily, weekly, monthly]:
+    # scrape based on date_range timeline given
+    elif date_range in [daily, weekly, monthly]:
 
         # phrase to use based on scraping cut off time
         timelines= {
@@ -175,7 +246,10 @@ def ld_scraper(job_type, frequency = None, location = 'Kuala Lumpur'):
             monthly: "last month"
         }
 
-        total_collected = _run_scrape(job_type, location, frequency, extra_params={"f_TPR": frequency}, max_offset = None)
+        # run the linkedin job scraper and get total number of jobs collected
+        total_collected = _run_scrape(job_type, location, date_range, max_jobs = None)
 
-        freq_type = timelines[frequency]
+        # get the phrase to use based on the date_range given
+        freq_type = timelines[date_range]
+        
         print(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings from linkedin, posted within the {freq_type}")
