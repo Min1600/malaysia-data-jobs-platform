@@ -12,18 +12,27 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-daily = 1
-weekly = 7
-biweekly = 14
-monthly = 31
-
+# url for website to be scraped and path to save ingested data into
 BASE_URL = f"https://my.jobstreet.com/data-analyst-jobs/in-Kuala-Lumpur"
 ABS_PATH = "/home/aminh/workspace/web_scraper/data/raw/jobstreet"
 
-
-
+# scraping timeline, if None then scrape all job listings
+daily = 1
+weekly = 7
+monthly = 31
 
 def get_total_pages(job_type, location = "Kuala Lumpur",frequency = None):
+    """
+    calculates total number of pages of job listings for the specific job type, location and dates provided
+
+    Args:
+        job_type: the title of job 
+        location: where the job is located, defaults to Kuala Lumpur
+        frequency: when job was listed, defaults to None, meaning all job listings available
+
+    Returns:
+        Number of pages on jobstreet webpage containing job listings
+    """
 
     params = {
     "keyword" : job_type,
@@ -32,6 +41,7 @@ def get_total_pages(job_type, location = "Kuala Lumpur",frequency = None):
     "page": 1
     }
 
+    # requests data from jobstreet
     response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome")
 
     if response.status_code != 200:
@@ -40,12 +50,13 @@ def get_total_pages(job_type, location = "Kuala Lumpur",frequency = None):
     # use beautiful soup to get text from page
     soup = BeautifulSoup(response.text, "html.parser")
     
-    # get no of jobs available on that day
+    # get no of jobs available
     no_of_jobs = soup.find(attrs={"data-automation": "totalJobsMessage"})
     total_jobs = no_of_jobs.text if no_of_jobs else None
 
-    # conver to int type for calculation
+    # convert to int type for calculation
     total_jobs = int(re.sub(r'[^\d]', '', total_jobs))
+
     # calculate number of pages (jobstreet has 30 jobs per page)
     pages = math.ceil(int(total_jobs) / 30)
 
@@ -54,15 +65,30 @@ def get_total_pages(job_type, location = "Kuala Lumpur",frequency = None):
 
 
 
-def get_jobs(response, abs_path, total_collected, page_counter, frequency, seen_ids):
-    copies = 0
+def get_jobs(response, filename, total_collected, seen_ids):
+    """
+    Scrape job listings from jobstreet and save them to a jsonl file
+
+    Args:
+        response: requested data from jobstreet webpage
+        filename: name and location of file to save the scraped data
+        total_collected: number of jobs collected in current run
+        seen_ids: set containing jobs ids of jobs already saved
+
+    Returns:
+        Total number of jobs collected
+    """
+
     # use beautiful soup to get text from page
     soup = BeautifulSoup(response.text, "html.parser")
     
-    # locate all HTML containers that have content related to jobs
+    # locate all job listings on website page
     job_cards = soup.find_all("article", attrs={"data-automation": "normalJob"})
 
-    # iterate over each HTML container of elements to get data from one job at a time
+    # keep track of repeated jobs
+    copies = 0
+
+    # iterate over all job listings found to get data from each one
     for card in job_cards:
 
         # Extract title and link elements safely
@@ -78,11 +104,13 @@ def get_jobs(response, abs_path, total_collected, page_counter, frequency, seen_
         job_id_match = re.search(r'/job/(\d+)', job_url)
         job_id = job_id_match.group(1) if job_id_match else job_url.split("/")[-1]
 
+        # locates any repeated jobs
         if job_id in seen_ids:
             copies += 1
             total_collected -= 1
             continue
         
+        # removes repeated jobs by adding to set() data type
         seen_ids.add(job_id)
 
         # Extract meta elements from card layout
@@ -95,13 +123,16 @@ def get_jobs(response, abs_path, total_collected, page_counter, frequency, seen_
         full_desc = ""
         desc_el = None
         
-        # if no response from description page continue
         if detail_res.status_code == 200:
+
+            # get job description/details
             detail_soup = BeautifulSoup(detail_res.text, "html.parser")
 
             # Extract Raw Description Text
             desc_el = detail_soup.find(attrs={"data-automation": "jobAdDetails"})
             full_desc = desc_el.text.strip() if desc_el else ""
+
+        # if no response from description page skip job (dont write to file)
         else:
             print(f"❌ Skipped ID {job_id}: Detail page unreachable.")
             total_collected -= 1
@@ -129,17 +160,10 @@ def get_jobs(response, abs_path, total_collected, page_counter, frequency, seen_
             "raw_html": str(desc_el) if desc_el else ""
         }
 
-        if frequency is None:
-            filename = f"{abs_path}/historic.jsonl"
-        else:
-            filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
-
         # save to jsonl file
         with open(filename, "a", encoding="utf-8") as f:
             json_line = json.dumps(raw_record, ensure_ascii=False)
             f.write(json_line + "\n")
-
-    print(f"Collected {total_collected} new jobs on Page {page_counter}")
 
     return total_collected
 
@@ -147,12 +171,24 @@ def get_jobs(response, abs_path, total_collected, page_counter, frequency, seen_
 
 
 def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
+    """
+    Reqeuests data from jobstreet webpage
 
+    Args:
+        job_type: the title of job 
+        location: where the job is located, defaults to Kuala Lumpur
+        frequency: when job was listed, defaults to None, meaning all job listings available
+
+    Returns:
+        Total number of jobs collected
+    """
+    
     page_counter = 1
     total_collected = 0
     seen_ids = set()
     max_pages = get_total_pages(job_type, location ,frequency)
 
+    # requests data as long as there are pages to scrape
     while page_counter <= max_pages:
         print(f"🔄 Requesting Page {page_counter}...")
 
@@ -164,34 +200,72 @@ def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
             "page": page_counter
         }
 
+        # requests data from jobstreet
         response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome")
         
         # if no response end loop
         if response.status_code != 200:
             print(f"🛑 Received a non-200 status code: {response.status_code}. Stopping pipeline.")
             break
-            
-        total_collected += get_jobs(response, ABS_PATH, total_collected, page_counter, frequency, seen_ids)
+        
+        # Save jobs with a timeline scraped on the same day into its own file
+        if frequency is None:
+            filename = f"{abs_path}/historic.jsonl"
+        else:
+            filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
+        
+        # get total number of jobs on current page
+        total_collected += get_jobs(response, filename, total_collected, seen_ids)
+
+        print(f"Collected {total_collected} new jobs on Page {page_counter}")
+
         page_counter += 1
-        time.sleep(random.uniform(4.0, 8.0))
+        time.sleep(random.uniform(4.0, 8.0)) # Anti-bot protection
 
     return total_collected
 
-def js_scraper(job_type, location, frequency):
+
+
+
+def js_scraper(job_type, location = "Kuala Lumpur", frequency = None):
+    """
+    Runs web scraper
+
+    Args:
+        job_type: the title of job 
+        location: where the job is located, defaults to Kuala Lumpur
+        frequency: when job was listed, defaults to None, meaning all job listings available
+
+    Returns:
+        nothing
+    """
 
     assert frequency in ['daily', 'weekly', 'monthly', None], 'frequency parameter needs to be daily, weekly, monthly or None'
 
+    # no frequency given means scrape all available data on jobstreet webapge
     if frequency is None:
         total_collected = _run_scrape(job_type, location)
         print(f"\n✅ Full run complete. Successfully saved {total_collected} {job_type} jobs from jobstreet listings!")
 
-    elif frequency in [daily, weekly, biweekly, monthly]:
-        total_collected = _run_scrape(job_type, location, frequency)
-        print(f"\n✨ Jobs from the last {frequency} days are collected. ")
-        print(f"✨ Successfully saved {total_collected} {job_type} jobs from jobstreet listings!")
+    # scrape based on frequency timeline given
+    elif frequency in [daily, weekly, monthly]:
 
+        # phrase to use based on scraping cut off time
+        timelines= {
+            daily: "last 24 hours",
+            weekly: "last week",
+            monthly: "last month"
+        }
+
+        # run the jobstreet job scraper and get total number of jobs collected
+        total_collected = _run_scrape(job_type, location, frequency)
+
+        # get the phrase to use based on the frequency given
+        freq_type = timelines[frequency]
+
+        print(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings from jobstreet, posted within the {freq_type}")
     else:
-        print('Error, input needs to be 1,7,14,31 or None')
+        print('Error, input needs to be 1,7,31 or None')
     
 
 #js_daily_scraper('Data Analyst', 'Kuala Lunpur')
