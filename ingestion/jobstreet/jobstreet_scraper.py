@@ -238,6 +238,8 @@ def js_scraper(job_type, location = "Kuala Lumpur", date_range = None):
 
     # no date_range given means scrape all available data on jobstreet webapge
     if date_range is None:
+
+        # run the jobstreet job scraper and get total number of jobs collected
         total_collected = _run_scrape(job_type, location, date_range)
         print(f"\n✅ Full run complete. Successfully saved {total_collected} {job_type} jobs from jobstreet listings!")
 
