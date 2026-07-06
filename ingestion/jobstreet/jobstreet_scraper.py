@@ -19,14 +19,14 @@ ABS_PATH = "/home/aminh/workspace/web_scraper/data/raw/jobstreet"
 # scraping timeline, if None then scrape all job listings
 daily, weekly, monthly = 1,7,31
 
-def get_total_pages(job_type, location = "Kuala Lumpur",frequency = None):
+def get_total_pages(job_type, location = "Kuala Lumpur",date_range = None):
     """
     calculates total number of pages of job listings for the specific job type, location and dates provided
 
     Args:
         job_type: the title of job 
         location: where the job is located, defaults to Kuala Lumpur
-        frequency: when job was listed, defaults to None, meaning all job listings available
+        date_range: when job was listed, defaults to None, meaning all job listings available
 
     Returns:
         Number of pages on jobstreet webpage containing job listings
@@ -35,7 +35,7 @@ def get_total_pages(job_type, location = "Kuala Lumpur",frequency = None):
     params = {
     "keyword" : job_type,
     "where" : location,
-    "daterange": frequency,
+    "daterange": date_range,
     "page": 1
     }
 
@@ -70,7 +70,7 @@ def get_jobs(response, filename, total_collected, seen_ids):
     Args:
         response: requested data from jobstreet webpage
         filename: name and location of file to save the scraped data
-        total_collected: number of jobs collected in current run
+        total_collected: number of jobs collected so far
         seen_ids: set containing jobs ids of jobs already saved
 
     Returns:
@@ -82,9 +82,6 @@ def get_jobs(response, filename, total_collected, seen_ids):
     
     # locate all job listings on website page
     job_cards = soup.find_all("article", attrs={"data-automation": "normalJob"})
-
-    # keep track of repeated jobs
-    copies = 0
 
     # iterate over all job listings found to get data from each one
     for card in job_cards:
@@ -104,7 +101,6 @@ def get_jobs(response, filename, total_collected, seen_ids):
 
         # locates any repeated jobs
         if job_id in seen_ids:
-            copies += 1
             total_collected -= 1
             continue
         
@@ -168,14 +164,14 @@ def get_jobs(response, filename, total_collected, seen_ids):
 
 
 
-def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
+def _run_scrape(job_type, location = "Kuala Lumpur", date_range = None):
     """
     Reqeuests data from jobstreet webpage
 
     Args:
         job_type: the title of job 
         location: where the job is located, defaults to Kuala Lumpur
-        frequency: when job was listed, defaults to None, meaning all job listings available
+        date_range: when job was listed, defaults to None, meaning all job listings available
 
     Returns:
         Total number of jobs collected
@@ -184,7 +180,7 @@ def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
     page_counter = 1
     total_collected = 0
     seen_ids = set()
-    max_pages = get_total_pages(job_type, location ,frequency)
+    max_pages = get_total_pages(job_type, location ,date_range)
 
     # requests data as long as there are pages to scrape
     while page_counter <= max_pages:
@@ -194,7 +190,7 @@ def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
         params = {
             "keyword" : job_type,
             "where" : location,
-            "daterange": frequency,
+            "daterange": date_range,
             "page": page_counter
         }
 
@@ -207,7 +203,7 @@ def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
             break
         
         # Save jobs with a timeline scraped on the same day into its own file
-        if frequency is None:
+        if date_range is None:
             filename = f"{abs_path}/historic.jsonl"
         else:
             filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
@@ -225,28 +221,28 @@ def _run_scrape(job_type, location = "Kuala Lumpur", frequency = None):
 
 
 
-def js_scraper(job_type, location = "Kuala Lumpur", frequency = None):
+def js_scraper(job_type, location = "Kuala Lumpur", date_range = None):
     """
     Runs web scraper
 
     Args:
         job_type: the title of job 
         location: where the job is located, defaults to Kuala Lumpur
-        frequency: when job was listed, defaults to None, meaning all job listings available
+        date_range: when job was listed, defaults to None, meaning all job listings available
 
     Returns:
         nothing
     """
 
-    assert frequency in ['daily', 'weekly', 'monthly', None], 'frequency parameter needs to be daily, weekly, monthly or None'
+    assert date_range in ['daily', 'weekly', 'monthly', None], 'date_range parameter needs to be daily, weekly, monthly or None'
 
-    # no frequency given means scrape all available data on jobstreet webapge
-    if frequency is None:
-        total_collected = _run_scrape(job_type, location)
+    # no date_range given means scrape all available data on jobstreet webapge
+    if date_range is None:
+        total_collected = _run_scrape(job_type, location, date_range)
         print(f"\n✅ Full run complete. Successfully saved {total_collected} {job_type} jobs from jobstreet listings!")
 
-    # scrape based on frequency timeline given
-    elif frequency in [daily, weekly, monthly]:
+    # scrape based on date_range timeline given
+    elif date_range in [daily, weekly, monthly]:
 
         # phrase to use based on scraping cut off time
         timelines= {
@@ -256,10 +252,10 @@ def js_scraper(job_type, location = "Kuala Lumpur", frequency = None):
         }
 
         # run the jobstreet job scraper and get total number of jobs collected
-        total_collected = _run_scrape(job_type, location, frequency)
+        total_collected = _run_scrape(job_type, location, date_range)
 
-        # get the phrase to use based on the frequency given
-        freq_type = timelines[frequency]
+        # get the phrase to use based on the date_range given
+        freq_type = timelines[date_range]
 
         print(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings from jobstreet, posted within the {freq_type}")
     else:
