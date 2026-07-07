@@ -35,18 +35,13 @@ def get_jobs(response):
     Returns:
         Number of job listings
     """
-    try:
-        # parse HTML content with beautiful soup
-        soup = BeautifulSoup(response.text, "html.parser")
+    # parse HTML content with beautiful soup
+    soup = BeautifulSoup(response.text, "html.parser")
 
-        # get the HTML containers that have job content
-        job_cards = soup.find_all("li")
+    # get the HTML containers that have job content
+    job_cards = soup.find_all("li")
 
-        return job_cards
-
-    except Exception as e:
-        logger.error(f"💥 Critical error occurred while parsing HTML structure: {e}", exc_info=True)
-        return []
+    return job_cards
 
 
 
@@ -198,7 +193,7 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
         # requests data from jobstreet
         response = requests.get(BASE_URL, params=params, headers=HEADERS)
 
-        # test connection 
+        # request linkedin webpage
         try:
             response = requests.get(BASE_URL, params=params, headers=HEADERS, timeout=10)
             response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
