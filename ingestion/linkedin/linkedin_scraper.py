@@ -58,7 +58,6 @@ def scraper(job_cards, filename, seen_ids):
     Args:
         job_cards: All job listings from jobstreet webpage
         filename: name and location of file to save the scraped data
-        num_jobs: number of jobs collected
         seen_ids: set containing jobs ids of jobs already saved
 
     Returns:
