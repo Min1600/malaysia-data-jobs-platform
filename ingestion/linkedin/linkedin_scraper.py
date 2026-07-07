@@ -2,6 +2,7 @@ import json
 import random
 import re
 import time
+import logging
 from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
@@ -15,11 +16,14 @@ HEADERS = {
 BASE_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
 ABS_PATH = "/home/aminh/workspace/web_scraper/data/raw/linkedin"
 
-# set linkedin to have 25 jobs per page, as linkedin stores up to 1000 jobs
-PAGE_SIZE = 25
+# linkedin api has 10 jobs per page
+PAGE_SIZE = 10
 
 # scraping timeline, if None then scrape all job listings
 daily,weekly,monthly = "r86400","r604800","r2592000"
+
+# logging
+ld_logger = logging.getLogger(__name__)
 
 def get_jobs(response):
     """
@@ -31,32 +35,37 @@ def get_jobs(response):
     Returns:
         Number of job listings
     """
+    try:
+        # parse HTML content with beautiful soup
+        soup = BeautifulSoup(response.text, "html.parser")
 
-    # use beautiful soup to get text from page
-    soup = BeautifulSoup(response.text, "html.parser")
+        # get the HTML containers that have job content
+        job_cards = soup.find_all("li")
 
-    # get the HTML containers that have job content
-    job_cards = soup.find_all("li")
+        return job_cards
 
-    return job_cards
+    except Exception as e:
+        logger.error(f"💥 Critical error occurred while parsing HTML structure: {e}", exc_info=True)
+        return []
 
 
 
 
-def scraper(job_cards, filename, total_collected, seen_ids):
+def scraper(job_cards, filename, seen_ids):
     """
     Scrape job listings from jobstreet and save them to a jsonl file
 
     Args:
         job_cards: All job listings from jobstreet webpage
         filename: name and location of file to save the scraped data
-        total_collected: number of jobs collected so far
+        num_jobs: number of jobs collected
         seen_ids: set containing jobs ids of jobs already saved
 
     Returns:
         Total number of jobs collected
     """
-    
+    num_jobs = len(job_cards)
+
     # iterate over each HTML container of elements to get data from one job at a time
     for card in job_cards:
 
@@ -66,15 +75,15 @@ def scraper(job_cards, filename, total_collected, seen_ids):
         job_url = link_el['href'].split("?")[0] # Clean URL
         
         # Extract clean numeric Job ID
-        job_id_match = re.search(r'-(\d+)(?:\b|$)', job_url)
-        job_id = job_id_match.group(1) if job_id_match else job_url.split("-")[-1]
+        #job_id_match = re.search(r'-(\d+)(?:\b|$)', job_url)
+        job_id = job_url.split("-")[-1]
 
         # locates any repeated jobs
         if job_id in seen_ids:
-            total_collected -= 1
+            num_jobs -= 1
             continue
         
-        # removes repeated jobs by adding to set() data type
+        # keeps track of all unique jobs
         seen_ids.add(job_id)
 
         # Use job_id to get url for full description of job
@@ -94,8 +103,8 @@ def scraper(job_cards, filename, total_collected, seen_ids):
             full_desc = desc_el.text.strip() if desc_el else ""
 
         else:
-            print(f"❌ Skipped ID {job_id}: Detail page unreachable.")
-            total_collected -= 1
+            ld_scraper.info(f"❌ Skipped ID {job_id}: Detail page unreachable. (url: {job_url})")
+            num_jobs -= 1
             continue
 
         # Extract meta elements from card layout 
@@ -131,13 +140,24 @@ def scraper(job_cards, filename, total_collected, seen_ids):
             # Save the full literal HTML block of the description for historical backup
             "raw_html": str(desc_el) if desc_el else ""
         }
+        
+        try:
+            # save to jsonl file
+            with open(filename, "a", encoding="utf-8") as f:
+                json_line = json.dumps(raw_record, ensure_ascii=False)
+                f.write(json_line + "\n")
 
-        # save to jsonl file
-        with open(filename, "a", encoding="utf-8") as f:
-            json_line = json.dumps(raw_record, ensure_ascii=False)
-            f.write(json_line + "\n")
+        except IOError as e:
+            # Catches disk full, permission denied, or missing directory errors
+            ld_logger.error(f"💾 File write failed! Could not append job to {filename}. Error: {e}")
+            return num_jobs
+        
+        except TypeError as e:
+            # Catches situations where raw_record contains an object json cannot serialize (e.g., datetime objects)
+            ld_logger.error(f"JSON serialization failed for job data. Serialization Error: {e}")
+            return num_jobs
 
-    return total_collected
+    return num_jobs
 
 
 
@@ -174,36 +194,46 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
             "f_TPR": date_range
         }
 
-        print(f"🔄 Requesting Page {page_counter} (Offset start={start_offset})...")
+        ld_logger.info(f"🔄 Requesting Page {page_counter}")
 
         # requests data from jobstreet
         response = requests.get(BASE_URL, params=params, headers=HEADERS)
 
-        # if no response end loop
-        if response.status_code != 200:
-            print(f"🛑 Received a non-200 status code: {response.status_code}. Stopping task.")
+        # test connection 
+        try:
+            response = requests.get(BASE_URL, params=params, headers=HEADERS, timeout=10)
+            response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
+        
+        # Catches bad status codes (4xx or 5xx)
+        except requests.exceptions.HTTPError as e:
+            ld_logger.error(f"🛑 HTTP Error occurred: {e.response.status_code} - {e.response.reason}. Stopping task.")
+            break
+        
+        # Catches connection drops, timeouts, DNS issues where NO response was given
+        except requests.exceptions.RequestException as e:
+            ld_logger.error(f"💥 Network level error occurred (No response received): {e}. Stopping task.")
             break
 
         # collects all job listings
         job_cards = get_jobs(response)
 
-        # updates job listings collected
-        total_collected += len(job_cards)
-
         # Save jobs with a timeline scraped on the same day into its own file
         if date_range is None:
-            filename = f"{abs_path}/historic.jsonl"
+            filename = f"{ABS_PATH}/historic.jsonl"
         else:
-            filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
-
-        # get total number of jobs on current page and save data to jsonl file
-        total_collected = scraper(job_cards, filename, total_collected, seen_ids)
+            filename = f"{ABS_PATH}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
 
         # stop if the site returns nothing more
         if len(job_cards) == 0:
             break
 
-        print(f"Collected {total_collected} new jobs on Page {page_counter}")
+        # get total number of jobs on current page
+        num_jobs = scraper(job_cards, filename, seen_ids)
+
+        # add to final total
+        total_collected += num_jobs
+
+        ld_scraper.info(f"Collected {num_jobs} new jobs on Page {page_counter}")
 
         # increase offset by eaxctly 25, as job cards are not reliable
         start_offset += PAGE_SIZE
@@ -227,14 +257,14 @@ def ld_scraper(job_type, date_range = None, location = 'Kuala Lumpur'):
     Returns:
         nothing
     """
-    assert date_range in ['daily', 'weekly', 'monthly', None], 'date_range parameter needs to be daily, weekly, monthly or None'
+    assert date_range in [daily, weekly, monthly, None], 'date_range parameter needs to be daily, weekly, monthly or None'
 
     # no date_range given means scrape all available data on linkedin webapge
     if date_range is None:
 
         # run the linkedin job scraper and get total number of jobs collected
-        total_collected = _run_scrape(job_type, location, date_range, max_jobs=975)
-        print(f"\n✅ Successfully saved all {job_type} job listings from linkedin. Captured {total_collected} jobs listings!")
+        total_collected = _run_scrape(job_type, date_range, location, max_jobs=975)
+        ld_logger.info(f"\n✅ Successfully saved all {job_type} job listings from linkedin. Captured {total_collected} jobs listings!")
     
     # scrape based on date_range timeline given
     elif date_range in [daily, weekly, monthly]:
@@ -247,9 +277,12 @@ def ld_scraper(job_type, date_range = None, location = 'Kuala Lumpur'):
         }
 
         # run the linkedin job scraper and get total number of jobs collected
-        total_collected = _run_scrape(job_type, location, date_range, max_jobs = None)
+        total_collected = _run_scrape(job_type, date_range, location, max_jobs = None)
 
         # get the phrase to use based on the date_range given
         freq_type = timelines[date_range]
         
-        print(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings from linkedin, posted within the {freq_type}")
+        ld_logger.info(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings from linkedin, posted within the {freq_type}")
+
+
+ld_scraper('Data Analyst',daily)
