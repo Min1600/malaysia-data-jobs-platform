@@ -247,14 +247,22 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
             response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome", timeout = 10)
             response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
         
+        except requests.exceptions.Timeout:
+            js_logger.error("⏱️ Request timed out after 10 seconds. Unable to determine number of pages. Aborting task!")
+            break
+
         # Catches bad status codes (4xx or 5xx)
         except requests.exceptions.HTTPError as e:
-            js_logger.error(f"🛑 HTTP Error occurred: {e.response.status_code} - {e.response.reason}. Stopping task.")
+            status = e.response.status_code if e.response else "Unknown"
+            reason = e.response.reason if e.response else str(e)
+
+            js_logger.error(
+                f"🛑 HTTP Error: {status} - {reason}. Unable to determine number of pages. Aborting task!")
             break
         
         # Catches connection drops, timeouts, DNS issues where NO response was given
         except requests.exceptions.RequestException as e:
-            js_logger.error(f"💥 Network level error occurred (No response received): {e}. Stopping task.")
+            js_logger.error(f"💥 Network level error occurred (No response received): {e}. Unable to determine number of pages aborting task!")
             break
 
         # Save jobs with a timeline scraped on the same day into its own file
