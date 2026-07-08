@@ -20,8 +20,8 @@ date_range = os.environ.get("DATE_RANGE", "None")
 run_type = os.environ.get("RUN_TYPE", "manual")
 
 # Standardize "N/A" string back into Python's actual None type
-if time_filter == "None":
-    time_filter = None
+if date_range == "None":
+    date_range = None
 
 # Logging
 os.makedirs("logs", exist_ok=True)
