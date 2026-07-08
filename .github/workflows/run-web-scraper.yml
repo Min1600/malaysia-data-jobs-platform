@@ -55,26 +55,37 @@ jobs:
         run: |
           python run.py
       
-      # Step 5: Push the newly created .jsonl data files straight to Hugging Face via SSH
-      - name: Push Data to Hugging Face (SSH)
+      # Step 5: Upload data using the official Python SDK 
+      - name: Upload Data to Hugging Face
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.HF_SSH_PRIVATE_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan huggingface.co >> ~/.ssh/known_hosts
+          python -c "
+          import os
+          from huggingface_hub import HfApi
           
-          git config --global user.name "Scraper Automation Bot"
-          git config --global user.email "bot@scraper.automation"
+          # Initialize the official API manager using your Write token
+          api = HfApi(token=os.environ.get('HF_TOKEN'))
           
-          git add data/**/*.jsonl logs/*.log || true
-          
-          if git diff-index --quiet HEAD --; then
-            echo "No new data changes detected. Skipping push."
-          else
-            git commit -m "Automated data sync [skip ci]"
-            # Use SSH address instead of HTTPS URL
-            git remote add hf git@huggingface.co:spaces/Amin1600/Web_Scraper_Server || true
-            git push hf main --force
-          fi
+          # 1. Safely upload the data folder if your scraper generated files
+          if os.path.exists('data'):
+              print('Uploading fresh scraped data files...')
+              api.upload_folder(
+                  folder_path='data',
+                  repo_id='Amin1600/Web_Scraper_Server',
+                  repo_type='space',
+                  path_in_repo='data'
+              )
+              
+          # 2. Safely upload the logs folder so you can see tracking history
+          if os.path.exists('logs'):
+              print('Uploading operational logs...')
+              api.upload_folder(
+                  folder_path='logs',
+                  repo_id='Amin1600/Web_Scraper_Server',
+                  repo_type='space',
+                  path_in_repo='logs'
+              )
+              
+          print('🎉 Sync completely successful!')
+          "
