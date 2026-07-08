@@ -3,6 +3,7 @@ import random
 import re
 import time
 import logging
+import os
 from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
@@ -14,7 +15,12 @@ HEADERS = {
 
 # url for website to be scraped and path to save ingested data into
 BASE_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
-ABS_PATH = "/home/aminh/workspace/web_scraper/data/raw/linkedin"
+
+# create relative path for linkedin scraped data
+ABS_PATH = os.path.join("data", "raw", "linkedin")
+
+# create directories if they don't exist
+os.makedirs(ABS_PATH, exist_ok=True)
 
 # linkedin api has 10 jobs per page
 PAGE_SIZE = 10
@@ -227,9 +233,10 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
 
         # Save jobs with a timeline scraped on the same day into its own file
         if date_range is None:
-            filename = f"{ABS_PATH}/historic.jsonl"
+            filename = os.path.join(ABS_PATH, "historic.jsonl")
         else:
-            filename = f"{ABS_PATH}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
+            current_time = datetime.now().strftime('%d-%m-%Y')
+            filename = os.path.join(ABS_PATH, f"{current_time}.jsonl")
 
         # stop if the site returns nothing more
         if len(job_cards) == 0:
