@@ -15,7 +15,12 @@ HEADERS = {
 
 # url for website to be scraped and path to save ingested data into
 BASE_URL = f"https://my.jobstreet.com/data-analyst-jobs/in-Kuala-Lumpur"
-ABS_PATH = "/home/aminh/workspace/web_scraper/data/raw/jobstreet"
+
+# create relative path for linkedin scraped data
+ABS_PATH = os.path.join("data", "raw", "jobstreet")
+
+# create directories if they don't exist
+os.makedirs(ABS_PATH, exist_ok=True)
 
 # scraping timeline, if None then scrape all job listings
 daily, weekly, monthly = 1,7,31
@@ -245,9 +250,10 @@ def _run_scrape(job_type, location = "Kuala Lumpur", date_range = None):
 
         # Save jobs with a timeline scraped on the same day into its own file
         if date_range is None:
-            filename = f"{abs_path}/historic.jsonl"
+            filename = os.path.join(ABS_PATH, "historic.jsonl")
         else:
-            filename = f"{abs_path}/{datetime.now().strftime('%d-%m-%Y')}.jsonl"
+            current_time = datetime.now().strftime('%d-%m-%Y')
+            filename = os.path.join(ABS_PATH, f"{current_time}.jsonl")
         
         # get total number of jobs on current page
         num_jobs = get_jobs(response, filename, seen_ids)
