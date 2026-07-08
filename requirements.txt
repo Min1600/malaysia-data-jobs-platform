@@ -9,3 +9,6 @@ beautifulsoup4==4.15.0
  
 # ===== Environment Variables =====
 python-dotenv==1.2.2
+
+streamlit
+pandas
