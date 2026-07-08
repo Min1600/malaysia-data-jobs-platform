@@ -97,13 +97,20 @@ def scraper(job_cards, filename, seen_ids):
             detail_res = requests.get(details_url, headers=HEADERS, timeout = 10)
             detail_res.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
         
+        except requests.exceptions.Timeout:
+            js_logger.error("⏱️ Request timed out after 10 seconds. Unable to determine number of pages. Aborting task!")
+
         # Catches bad status codes (4xx or 5xx)
         except requests.exceptions.HTTPError as e:
-            ld_logger.error(f"🛑 HTTP Error occurred: {e.detail_res.status_code} - {e.detail_res.reason}. Stopping task.")
+            status = e.response.status_code if e.response else "Unknown"
+            reason = e.response.reason if e.response else str(e)
+
+            js_logger.error(
+                f"🛑 HTTP Error: {status} - {reason}. Unable to determine number of pages. Aborting task!")
         
         # Catches connection drops, timeouts, DNS issues where NO response was given
         except requests.exceptions.RequestException as e:
-            ld_logger.error(f"💥 Network level error occurred (No response received): {e}. Stopping task.")
+            js_logger.error(f"💥 Network level error occurred (No response received): {e}. Unable to determine number of pages aborting task!")
 
         full_desc = ""
         desc_el = None
