@@ -41,6 +41,8 @@ def get_jobs(response):
     # get the HTML containers that have job content
     job_cards = soup.find_all("li")
 
+    ld_logger.debug(f"Collecting jobs listings from linkedin found {len(job_cards)}")
+
     return job_cards
 
 
@@ -83,8 +85,20 @@ def scraper(job_cards, filename, seen_ids):
         # Use job_id to get url for full description of job
         details_url = f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{job_id}"
 
+
         # Call Detail Page for full Job Description
-        detail_res = requests.get(details_url, headers=HEADERS)
+        try:
+            detail_res = requests.get(details_url, headers=HEADERS, timeout = 10)
+            detail_res.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
+        
+        # Catches bad status codes (4xx or 5xx)
+        except requests.exceptions.HTTPError as e:
+            ld_logger.error(f"🛑 HTTP Error occurred: {e.detail_res.status_code} - {e.detail_res.reason}. Stopping task.")
+        
+        # Catches connection drops, timeouts, DNS issues where NO response was given
+        except requests.exceptions.RequestException as e:
+            ld_logger.error(f"💥 Network level error occurred (No response received): {e}. Stopping task.")
+
         full_desc = ""
         desc_el = None
 
