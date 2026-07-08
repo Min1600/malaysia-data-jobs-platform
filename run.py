@@ -13,6 +13,16 @@ from ingestion.linkedin.linkedin_scraper import ld_scraper
 ROOT = Path(__file__).parent
 load_dotenv(ROOT / ".env")
 
+# Read variables injected by GitHub Actions environment blocks
+job_title = os.environ.get("JOB_TYPE", "Data Analyst")
+target_location = os.environ.get("LOCATION", "Kuala Lumpur")
+date_range = os.environ.get("DATE_RANGE", "None")
+run_type = os.environ.get("RUN_TYPE", "manual")
+
+# Standardize "N/A" string back into Python's actual None type
+if time_filter == "None":
+    time_filter = None
+
 # Logging
 os.makedirs("logs", exist_ok=True)
 timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
@@ -48,16 +58,43 @@ main_logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    """
-    logger.info("⏰ Scheduled automation started...")
+
+    if run_type == 'daily':
+        # 🌟 Define all the jobs you want to track automatically every night!
+        DAILY_JOBS = [
+            "Data Analyst"
+        ]
+
+        s_target_location = 'Kuala Lumpur'
+        ld_date_range = "r86400"
+        js_date_range = 1
+
+    for job in DAILY_JOBS:
+
+        main_logger.info("⏰ Starting Scheduled web scraper run for {job} job listings.")
+
+        main_logger.info("🚀 Scraping jobs from Jobstreet")
+        js_scraper(job_type = job, location = s_target_location, date_range = js_date_range)
+
+        main_logger.info("🚀 Scraping jobs from Linkedin")
+        ld_scraper(job_type = job, location = s_target_location, date_range = ld_date_range)
+
+        main_logger.info("🏁 All scraping tasks completed successfully.")
     
-    logger.info("🚀 Starting JobStreet Scraper...")
-    js_scraper()
-    
-    logger.info("🚀 Starting LinkedIn Scraper...")
-    ld_scraper()
-    
-    logger.info("🏁 All scraping tasks completed successfully.")
-    """
+    elif run_type == 'manual':
+
+        main_logger.info("Starting web scraper run for {job_title} job listings.")
+
+        main_logger.info("🚀 Scraping jobs from Jobstreet")
+        js_scraper(job_type = job_title, location = target_location, date_range = date_range)
+
+        main_logger.info("🚀 Scraping jobs from Linkedin")
+        ld_scraper(job_type = job_title, location = target_location, date_range = date_range)
+
+        main_logger.info("🏁 All scraping tasks completed successfully.")
+
+    else:
+        main_logger.warning('🛑 Undetermined run type task is unable to start!')
+
 
     #js_scraper("Data Analyst", 1)
