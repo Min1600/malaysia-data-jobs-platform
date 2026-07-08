@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 # Import modules
 from ingestion.jobstreet.jobstreet_scraper import js_scraper, get_total_pages
-from ingestion.jobstreet.linkedin_scraper import ld_scraper, get_total_pages
+from ingestion.linkedin.linkedin_scraper import ld_scraper, get_total_pages
 
 # Setup
 ROOT = Path(__file__).parent
