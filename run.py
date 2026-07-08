@@ -69,17 +69,17 @@ if __name__ == "__main__":
         ld_date_range = "r86400"
         js_date_range = 1
 
-    for job in DAILY_JOBS:
+        for job in DAILY_JOBS:
 
-        main_logger.info("⏰ Starting Scheduled web scraper run for {job} job listings.")
+            main_logger.info("⏰ Starting Scheduled web scraper run for {job} job listings.")
 
-        main_logger.info("🚀 Scraping jobs from Jobstreet")
-        js_scraper(job_type = job, location = s_target_location, date_range = js_date_range)
+            main_logger.info("🚀 Scraping jobs from Jobstreet")
+            js_scraper(job_type = job, location = s_target_location, date_range = js_date_range)
 
-        main_logger.info("🚀 Scraping jobs from Linkedin")
-        ld_scraper(job_type = job, location = s_target_location, date_range = ld_date_range)
+            main_logger.info("🚀 Scraping jobs from Linkedin")
+            ld_scraper(job_type = job, location = s_target_location, date_range = ld_date_range)
 
-        main_logger.info("🏁 All scraping tasks completed successfully.")
+            main_logger.info("🏁 All scraping tasks completed successfully.")
     
     elif run_type == 'manual':
 
