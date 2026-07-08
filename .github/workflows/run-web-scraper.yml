@@ -70,5 +70,5 @@ jobs:
             echo "No new data changes detected. Skipping push."
           else
             git commit -m "Automated data sync [skip ci]"
-            git push https://root:$HF_TOKEN@huggingface.co/spaces/Amin1600/Web_Scraper_Server main --force
+            git push https://Amin1600:$HF_TOKEN@huggingface.co/spaces/Amin1600/Web_Scraper_Server main --force
           fi
