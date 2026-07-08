@@ -55,20 +55,26 @@ jobs:
         run: |
           python run.py
       
-      # Step 5: Push the newly created .jsonl data files straight to Hugging Face
-      - name: Push Data to Hugging Face
+      # Step 5: Push the newly created .jsonl data files straight to Hugging Face via SSH
+      - name: Push Data to Hugging Face (SSH)
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          SSH_PRIVATE_KEY: ${{ secrets.HF_SSH_PRIVATE_KEY }}
         run: |
+        mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan huggingface.co >> ~/.ssh/known_hosts
+          
           git config --global user.name "Scraper Automation Bot"
           git config --global user.email "bot@scraper.automation"
           
-          # 🌟 This tells git to recursively look into your new data folders and capture all generated jsonl files
           git add data/**/*.jsonl logs/*.log || true
           
           if git diff-index --quiet HEAD --; then
             echo "No new data changes detected. Skipping push."
           else
             git commit -m "Automated data sync [skip ci]"
-            git push https://Amin1600:$HF_TOKEN@huggingface.co/spaces/Amin1600/Web_Scraper_Server main --force
+            # Use SSH address instead of HTTPS URL
+            git remote add hf git@huggingface.co:spaces/Amin1600/Web_Scraper_Server || true
+            git push hf main --force
           fi
