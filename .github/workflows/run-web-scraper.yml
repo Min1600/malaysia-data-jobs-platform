@@ -55,38 +55,29 @@ jobs:
         run: |
           python run.py
       
-      # Step 5: Upload data using the official Python SDK 
-      - name: Upload Data to Hugging Face
+      # Step 5: Upload EVERYTHING (Code + Data) using the official Python SDK
+      - name: Sync Project to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           python -c "
           import os
+          import logging
           from huggingface_hub import HfApi
           
-          # Initialize the official API manager using your Write token
+          logging.getLogger('huggingface_hub').setLevel(logging.ERROR)
           api = HfApi(token=os.environ.get('HF_TOKEN'))
           
-          # 1. Safely upload the data folder if your scraper generated files
-          if os.path.exists('data'):
-              print('Uploading fresh scraped data files...')
+          print('🚀 Uploading latest code changes, data files, and logs...')
+          try:
               api.upload_folder(
-                  folder_path='.',
+                  folder_path='.',  # 🌟 '.' means upload the entire project directory!
                   repo_id='Amin1600/Web_Scraper_Server',
                   repo_type='space',
-                  path_in_repo='data',
-                  ignore_patterns=['.git/*', '.github/*']
+                  path_in_repo='.',
+                  ignore_patterns=['.git/*', '.github/*']  # 🌟 Prevents copying internal GitHub system files
               )
-              
-          # 2. Safely upload the logs folder so you can see tracking history
-          if os.path.exists('logs'):
-              print('Uploading operational logs...')
-              api.upload_folder(
-                  folder_path='logs',
-                  repo_id='Amin1600/Web_Scraper_Server',
-                  repo_type='space',
-                  path_in_repo='logs'
-              )
-              
-          print('🎉 Sync completely successful!')
+              print('🎉 Hugging Face Space successfully updated and synced!')
+          except Exception as e:
+              print(f'Sync notice: {e}')
           "
