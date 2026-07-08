@@ -1,18 +1,24 @@
-name: Manual Job Web Scraper
+name: Job Web Scraper
 
 # 1. Choose WHEN this automation runs
 on:
-  workflow_dispatch: # Triggered via Streamlit Button
+  schedule:
+    - cron: '0 0 * * *' # 🌟 Keeps your automatic nightly run untouched!
+    
+  workflow_dispatch:   # 🌟 Adds manual controls for your Streamlit UI
     inputs:
       job_type:
-        description: 'Job Keyword'
+        description: 'Job Title to search'
         required: true
+        default: 'Data Analyst'
       location:
         description: 'Location'
         required: true
+        default: 'Kuala Lumpur'
       date_range:
-        description: 'Date Range Code'
+        description: 'Date Range (daily, weekly, monthly, all)'
         required: true
+        default: 'all'
 
 # 2. Define WHAT the virtual server actually does
 jobs:
@@ -37,12 +43,15 @@ jobs:
           pip install -r requirements.txt
 
       # Step 4: Run your actual python file!
-      - name: Execute Manual Python Script
+      - name: Execute Python Script
         env:
           PYTHONPATH: .
-          JOB_TYPE: ${{ github.event.inputs.job_type }}
-          LOCATION: ${{ github.event.inputs.location }}
-          DATE_RANGE: ${{ github.event.inputs.date_range }}
+          # define if run is manual or scheduled
+          RUN_TYPE: ${{ github.event_name == 'workflow_dispatch' && 'manual' || 'daily' }}
+          # If triggered by cron, fall back to defaults, else use UI inputs
+          JOB_TYPE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.job_type || 'Data Analyst' }}
+          LOCATION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.location || 'Kuala Lumpur' }}
+          DATE_RANGE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.date_range || 'daily' }}
         run: |
           python run.py
       
