@@ -95,6 +95,3 @@ if __name__ == "__main__":
 
     else:
         main_logger.warning('🛑 Undetermined run type task is unable to start!')
-
-
-    #js_scraper("Data Analyst", 1)
