@@ -298,3 +298,6 @@ def ld_scraper(job_type, date_range = None, location = 'Kuala Lumpur'):
         freq_type = timelines[date_range]
         
         ld_logger.info(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings from linkedin, posted within the {freq_type}")
+    
+    else:
+        ld_logger.warning('Error, input needs to be "r86400","r604800","r2592000" or None')
