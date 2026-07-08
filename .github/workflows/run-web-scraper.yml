@@ -4,7 +4,7 @@ name: Job Web Scraper
 on:
   push:
     branches: [main]
-    
+
   schedule:
     - cron: '0 0 * * *' # 🌟 Keeps your automatic nightly run untouched!
     
@@ -47,6 +47,7 @@ jobs:
 
       # Step 4: Run your actual python file!
       - name: Execute Python Script
+        if: github.event_name != 'push'
         env:
           PYTHONPATH: .
           # define if run is manual or scheduled
