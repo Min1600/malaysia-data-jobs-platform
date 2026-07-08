@@ -71,10 +71,11 @@ jobs:
           if os.path.exists('data'):
               print('Uploading fresh scraped data files...')
               api.upload_folder(
-                  folder_path='data',
+                  folder_path='.',
                   repo_id='Amin1600/Web_Scraper_Server',
                   repo_type='space',
-                  path_in_repo='data'
+                  path_in_repo='data',
+                  ignore_patterns=['.git/*', '.github/*']
               )
               
           # 2. Safely upload the logs folder so you can see tracking history
