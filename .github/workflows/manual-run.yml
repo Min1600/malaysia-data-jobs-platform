@@ -1,8 +1,18 @@
-name: Test Python Script
+name: Manual Job Web Scraper
 
 # 1. Choose WHEN this automation runs
 on:
-  workflow_dispatch: # 🌟 This adds a manual "Run workflow" button in GitHub so you can trigger it whenever you want!
+  workflow_dispatch: # Triggered via Streamlit Button
+    inputs:
+      job_type:
+        description: 'Job Keyword'
+        required: true
+      location:
+        description: 'Location'
+        required: true
+      date_range:
+        description: 'Date Range Code'
+        required: true
 
 # 2. Define WHAT the virtual server actually does
 jobs:
@@ -27,7 +37,12 @@ jobs:
           pip install -r requirements.txt
 
       # Step 4: Run your actual python file!
-      - name: Run Scraper
+      - name: Execute Manual Python Script
+        env:
+          PYTHONPATH: .
+          JOB_TYPE: ${{ github.event.inputs.job_type }}
+          LOCATION: ${{ github.event.inputs.location }}
+          DATE_RANGE: ${{ github.event.inputs.date_range }}
         run: |
           python run.py
       
@@ -46,5 +61,5 @@ jobs:
             echo "No new data changes detected. Skipping push."
           else
             git commit -m "Automated data sync [skip ci]"
-            git push https://root:$HF_TOKEN@huggingface.co/spaces/YOUR_HF_USERNAME/YOUR_SPACE_NAME main --force
+            git push https://root:$HF_TOKEN@huggingface.co/spaces/Amin1600/Web_Scraper_Server main --force
           fi
