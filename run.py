@@ -21,6 +21,10 @@ timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG) # Master threshold level
 
+# Mute the specific sub-loggers
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
+
 # 2. Create Handler #1: For writing to a file
 timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
 file_handler = logging.FileHandler(f"logs/app-{timestamp}.log")
@@ -55,5 +59,5 @@ if __name__ == "__main__":
     
     logger.info("🏁 All scraping tasks completed successfully.")
     """
-    #print("Hello World")
-    #ld_scraper("Data Analyst", "r86400")
+
+    #js_scraper("Data Analyst", 1)
