@@ -56,4 +56,4 @@ if __name__ == "__main__":
     logger.info("🏁 All scraping tasks completed successfully.")
     """
     print("Hello World")
-    js_scraper("Data Analyst", "Kuala Lumpur", 1)
+    ld_scraper("Data Analyst", "r86400")

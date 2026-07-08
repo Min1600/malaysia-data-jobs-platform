@@ -278,7 +278,7 @@ def js_scraper(job_type, location = "Kuala Lumpur", date_range = None):
         nothing
     """
 
-    assert date_range in ['daily', 'weekly', 'monthly', None], 'date_range parameter needs to be daily, weekly, monthly or None'
+    assert date_range in [daily, weekly, monthly, None], 'date_range parameter needs to be daily, weekly, monthly or None'
 
     # no date_range given means scrape all available data on jobstreet webapge
     if date_range is None:
