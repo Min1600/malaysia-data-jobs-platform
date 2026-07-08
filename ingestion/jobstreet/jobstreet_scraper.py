@@ -3,6 +3,7 @@ import random
 import math
 import re
 import time
+import logging
 from datetime import datetime
 from bs4 import BeautifulSoup
 from curl_cffi import requests
@@ -33,6 +34,7 @@ def get_total_pages(job_type, location = "Kuala Lumpur",date_range = None):
     Returns:
         Number of pages on jobstreet webpage containing job listings
     """
+    js_logger.debug(f"Collecting number of pages of {job_type} job listings in {location} from jobstreet.")
 
     params = {
     "keyword" : job_type,
@@ -74,6 +76,8 @@ def get_total_pages(job_type, location = "Kuala Lumpur",date_range = None):
 
     # calculate number of pages (jobstreet has 30 jobs per page)
     pages = math.ceil(int(total_jobs) / 30)
+
+    js_logger.debug(f"Found {pages} pages")
 
     return pages
 
@@ -279,10 +283,10 @@ def js_scraper(job_type, location = "Kuala Lumpur", date_range = None):
     # no date_range given means scrape all available data on jobstreet webapge
     if date_range is None:
 
-        js_logger.info(f"Collecting all job street {job_type} job listings.")
+        js_logger.info(f"Collecting all job street {job_type} job listings in {location}.")
         # run the jobstreet job scraper and get total number of jobs collected
         total_collected = _run_scrape(job_type, location, date_range)
-        js_logger.info(f"\n✅ Full run complete. Successfully saved {total_collected} {job_type} jobs from jobstreet listings!")
+        js_logger.info(f"\n✅ Full run complete. Successfully saved {total_collected} {job_type} jobs in {location} from jobstreet!")
 
     # scrape based on date_range timeline given
     elif date_range in [daily, weekly, monthly]:
@@ -298,12 +302,12 @@ def js_scraper(job_type, location = "Kuala Lumpur", date_range = None):
         # get the phrase to use based on the date_range given
         freq_type = timelines[date_range]
 
-        js_logger.info(f"Collecting all jobstreet {job_type} job listings from the {freq_type}")
+        js_logger.info(f"Collecting all jobstreet {job_type} job listings from the {freq_type} in {location}")
 
         # run the jobstreet job scraper and get total number of jobs collected
         total_collected = _run_scrape(job_type, location, date_range)
 
-        js_logger.info(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings from jobstreet, posted within the {freq_type}")
+        js_logger.info(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings in {location} from jobstreet, posted within the {freq_type}")
     else:
         js_logger.info('Error, input needs to be 1,7,31 or None')
     
