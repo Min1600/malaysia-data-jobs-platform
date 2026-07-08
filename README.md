@@ -3,7 +3,7 @@ title: Job Tracker
 emoji: 📊
 colorFrom: green
 colorTo: green
-sdk: streamlit
+sdk: static
 app_file: main.py
 python_version: 3.12
 pinned: false
