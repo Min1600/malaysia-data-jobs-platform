@@ -4,6 +4,7 @@ import math
 import re
 import time
 import logging
+import os
 from datetime import datetime
 from bs4 import BeautifulSoup
 from curl_cffi import requests
@@ -27,14 +28,14 @@ daily, weekly, monthly = 1,7,31
 
 js_logger = logging.getLogger(__name__)
 
-def get_total_pages(job_type, location = "Kuala Lumpur",date_range = None):
+def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     """
     calculates total number of pages of job listings for the specific job type, location and dates provided
 
     Args:
         job_type: the title of job 
-        location: where the job is located, defaults to Kuala Lumpur
         date_range: when job was listed, defaults to None, meaning all job listings available
+        location: where the job is located, defaults to Kuala Lumpur
 
     Returns:
         Number of pages on jobstreet webpage containing job listings
@@ -199,14 +200,14 @@ def get_jobs(response, filename, seen_ids):
 
 
 
-def _run_scrape(job_type, location = "Kuala Lumpur", date_range = None):
+def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
     """
     Reqeuests data from jobstreet webpage
 
     Args:
         job_type: the title of job 
-        location: where the job is located, defaults to Kuala Lumpur
         date_range: when job was listed, defaults to None, meaning all job listings available
+        location: where the job is located, defaults to Kuala Lumpur
 
     Returns:
         Total number of jobs collected
@@ -215,7 +216,7 @@ def _run_scrape(job_type, location = "Kuala Lumpur", date_range = None):
     page_counter = 1
     total_collected = 0
     seen_ids = set()
-    max_pages = get_total_pages(job_type, location ,date_range)
+    max_pages = get_total_pages(job_type, date_range, location)
 
     if not max_pages:
         return total_collected
@@ -271,14 +272,14 @@ def _run_scrape(job_type, location = "Kuala Lumpur", date_range = None):
 
 
 
-def js_scraper(job_type, location = "Kuala Lumpur", date_range = None):
+def js_scraper(job_type, date_range = None, location = "Kuala Lumpur"):
     """
     Runs web scraper
 
     Args:
         job_type: the title of job 
-        location: where the job is located, defaults to Kuala Lumpur
         date_range: when job was listed, defaults to None, meaning all job listings available
+        location: where the job is located, defaults to Kuala Lumpur
 
     Returns:
         nothing
@@ -290,8 +291,9 @@ def js_scraper(job_type, location = "Kuala Lumpur", date_range = None):
     if date_range is None:
 
         js_logger.info(f"Collecting all job street {job_type} job listings in {location}.")
+
         # run the jobstreet job scraper and get total number of jobs collected
-        total_collected = _run_scrape(job_type, location, date_range)
+        total_collected = _run_scrape(job_type, date_range, location)
         js_logger.info(f"\n✅ Full run complete. Successfully saved {total_collected} {job_type} jobs in {location} from jobstreet!")
 
     # scrape based on date_range timeline given
@@ -311,9 +313,8 @@ def js_scraper(job_type, location = "Kuala Lumpur", date_range = None):
         js_logger.info(f"Collecting all jobstreet {job_type} job listings from the {freq_type} in {location}")
 
         # run the jobstreet job scraper and get total number of jobs collected
-        total_collected = _run_scrape(job_type, location, date_range)
-
+        total_collected = _run_scrape(job_type, date_range, location)
         js_logger.info(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings in {location} from jobstreet, posted within the {freq_type}")
     else:
-        js_logger.info('Error, input needs to be 1,7,31 or None')
+        js_logger.warning('Error, input needs to be 1,7,31 or None')
     
