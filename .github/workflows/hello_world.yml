@@ -1,0 +1,26 @@
+name: Test Python Script
+
+# 1. Choose WHEN this automation runs
+on:
+  workflow_dispatch: # 🌟 This adds a manual "Run workflow" button in GitHub so you can trigger it whenever you want!
+
+# 2. Define WHAT the virtual server actually does
+jobs:
+  run-script:
+    runs-on: ubuntu-latest # Spins up a fresh, temporary Linux virtual machine
+    
+    steps:
+      # Step 1: Download your repository's files onto the virtual machine
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Python on the virtual machine
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Step 3: Run your actual python file!
+      - name: Execute Python Script
+        run: |
+          python run.py

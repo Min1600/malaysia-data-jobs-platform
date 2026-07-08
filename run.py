@@ -44,6 +44,7 @@ main_logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
+    """
     logger.info("⏰ Scheduled automation started...")
     
     logger.info("🚀 Starting JobStreet Scraper...")
@@ -53,3 +54,5 @@ if __name__ == "__main__":
     ld_scraper()
     
     logger.info("🏁 All scraping tasks completed successfully.")
+    """
+    print("Hello World")
