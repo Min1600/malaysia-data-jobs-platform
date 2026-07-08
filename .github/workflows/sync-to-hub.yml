@@ -16,4 +16,4 @@ jobs:
           huggingface_repo_id: Amin1600/Web_Scraper_Server
           hf_token: ${{ secrets.HF_TOKEN }}
           repo_type: space
-          space_sdk: docker
+          space_sdk: streamlit
