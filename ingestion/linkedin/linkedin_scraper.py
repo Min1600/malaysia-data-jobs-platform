@@ -111,7 +111,7 @@ def scraper(job_cards, filename, seen_ids):
             full_desc = desc_el.text.strip() if desc_el else ""
 
         else:
-            ld_scraper.info(f"❌ Skipped ID {job_id}: Detail page unreachable. (url: {job_url})")
+            ld_logger.info(f"❌ Skipped ID {job_id}: Detail page unreachable. (url: {job_url})")
             num_jobs -= 1
             continue
 
@@ -241,7 +241,7 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
         # add to final total
         total_collected += num_jobs
 
-        ld_scraper.info(f"Collected {num_jobs} new jobs on Page {page_counter}")
+        ld_logger.info(f"Collected {num_jobs} new jobs on Page {page_counter}")
 
         # increase offset by eaxctly 25, as job cards are not reliable
         start_offset += PAGE_SIZE
