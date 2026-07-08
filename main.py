@@ -53,4 +53,3 @@ if st.sidebar.button("🚀 Trigger Cloud Scraper"):
                 st.sidebar.success("🎉 GitHub Workflow started! Your fresh data will show up here in a few minutes.")
             else:
                 st.sidebar.error(f"Failed to connect. Error {response.status_code}: {response.text}")
-
