@@ -58,7 +58,7 @@ main_logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-    js_scraper(job_type = 'Data Analyst', location = target_location, date_range = 1)
+    
     if run_type == 'daily':
         # 🌟 Define all the jobs you want to track automatically every night!
         DAILY_JOBS = [
