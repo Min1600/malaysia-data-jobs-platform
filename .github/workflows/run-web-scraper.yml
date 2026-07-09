@@ -59,8 +59,8 @@ jobs:
         run: |
           python run.py
       
-      # Step 5: The bulletproof Python script that streams everything to HF for free
-      - name: Sync Code and Data to Hugging Face
+# Step 5: Securely upload Code, Data, and Logs directly to Hugging Face
+      - name: Sync Everything to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
@@ -71,17 +71,46 @@ jobs:
           
           logging.getLogger('huggingface_hub').setLevel(logging.ERROR)
           api = HfApi(token=os.environ.get('HF_TOKEN'))
+          REPO_ID = 'Amin1600/Web_Scraper_Server'
           
-          print('🚀 Syncing entire repository workspace (Code, Data, and Logs)...')
+          # 1. Sync core workspace structure (skipping Git/GitHub system files)
+          print('🚀 Syncing repository scripts and core workspace...')
           try:
               api.upload_folder(
                   folder_path='.',
-                  repo_id='Amin1600/Web_Scraper_Server',
+                  repo_id=REPO_ID,
                   repo_type='space',
                   path_in_repo='.',
-                  ignore_patterns=['.git/*', '.github/*']
+                  ignore_patterns=['.git/*', '.github/*', 'data/*', 'logs/*']
               )
-              print('🎉 Hugging Face Space successfully updated and synced!')
           except Exception as e:
-              print(f'Sync notice: {e}')
+              print(f'Workspace sync notice: {e}')
+          
+          # 2. Bypass .gitignore and explicitly stream the scraped data folder
+          if os.path.exists('data'):
+              print('📦 Uploading fresh scraped data files (.jsonl)...')
+              try:
+                  api.upload_folder(
+                      folder_path='data',
+                      repo_id=REPO_ID,
+                      repo_type='space',
+                      path_in_repo='data'
+                  )
+              except Exception as e:
+                  print(f'Data sync notice: {e}')
+                  
+          # 3. Bypass .gitignore and explicitly stream the operational logs folder
+          if os.path.exists('logs'):
+              print('📝 Uploading latest operational logs (.log)...')
+              try:
+                  api.upload_folder(
+                      folder_path='logs',
+                      repo_id=REPO_ID,
+                      repo_type='space',
+                      path_in_repo='logs'
+                  )
+              except Exception as e:
+                  print(f'Logs sync notice: {e}')
+                  
+          print('🎉 Synchronization process finished!')
           "
