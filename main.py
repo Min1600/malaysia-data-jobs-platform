@@ -15,9 +15,10 @@ date_input = st.sidebar.selectbox(
     "Date Range Filter", 
     options=["all", "daily", "weekly", "monthly"]
 )
-
+if date_input == 'all':
+    date_input = 'None'
 # 2. Map frontend inputs to match your backend python variables
-date_mapping = {"all": "None", "daily": "r86400", "weekly": "r604800", "monthly": "r2592000"}
+#date_mapping = {"all": "None", "daily": "r86400", "weekly": "r604800", "monthly": "r2592000"}
 
 # 3. The Activation Button
 if st.sidebar.button("🚀 Trigger Cloud Scraper"):
@@ -43,7 +44,7 @@ if st.sidebar.button("🚀 Trigger Cloud Scraper"):
                 "inputs": {
                     "job_type": job_input,
                     "location": loc_input,
-                    "date_range": date_mapping[date_input]
+                    "date_range": date_input
                 }
             }
             
