@@ -13,15 +13,6 @@ from ingestion.linkedin.linkedin_scraper import ld_scraper
 
 app_logger = logging.getLogger(__name__)
 
-if not os.environ.get("HF_TOKEN") and os.path.exists(".env"):
-    with open(".env", "r") as f:
-        for line in f:
-            if line.strip() and not line.startswith("#") and "=" in line:
-                key, value = line.strip().split("=", 1)
-                if key.strip() == "HF_TOKEN":
-                    os.environ["HF_TOKEN"] = value.strip().strip('"').strip("'")
-
-                    
 def upload_artifacts_to_hf():
     """Beams local JSONL data and active log files to permanent HF Dataset storage"""
 
