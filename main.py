@@ -87,5 +87,5 @@ def daily_scraper():
 
 scheduler = BackgroundScheduler()
 # Runs every single night
-scheduler.add_job(automated_job, 'cron', hour=16, minute=0)
+scheduler.add_job(daily_scraper, 'cron', hour=16, minute=0)
 scheduler.start()
