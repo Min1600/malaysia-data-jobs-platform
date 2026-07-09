@@ -158,7 +158,7 @@ def get_jobs(response, filename, seen_ids):
         salary_el = card.find("span", attrs={"data-automation": "jobSalary"})
         
         # Call Detail Page for full Job Description
-        detail_res = requests.get(job_url, headers=HEADERS, impersonate="chrome120")
+        detail_res = requests.get(job_url, headers=HEADERS, proxies=proxies, impersonate="chrome120")
         full_desc = ""
         desc_el = None
         
