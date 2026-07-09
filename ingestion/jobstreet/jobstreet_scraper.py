@@ -40,7 +40,7 @@ PROXY_PASS = os.environ.get("PROXY_PASS")
 # Only build the dict if the secrets exist, preventing crashes
 if all([PROXY_IP_1, PROXY_PORT_1, PROXY_USER, PROXY_PASS]):
     # Dynamically builds: http://user:pass@ip:port
-    authenticated_proxy_url = f"http://{PROXY_USER}:{PROXY_PASS}@{PROXY_IP}:{PROXY_PORT}/"
+    authenticated_proxy_url = f"http://{PROXY_USER}:{PROXY_PASS}@{PROXY_IP_1}:{PROXY_PORT_1}/"
     
     proxies = {
         "http": authenticated_proxy_url,
