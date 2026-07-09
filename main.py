@@ -20,6 +20,8 @@ date_input = st.sidebar.selectbox(
 
 if date_input == 'all':
     date_input = 'None'
+
+
 # 2. Map frontend inputs to match your backend python variables
 #date_mapping = {"all": "None", "daily": "r86400", "weekly": "r604800", "monthly": "r2592000"}
 

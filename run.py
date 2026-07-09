@@ -16,7 +16,7 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
     if date_range == "None" or date_range is None:
         date_range = None
     
-        if run_type == 'scheduled':
+    if run_type == 'scheduled':
         # 🌟 Define all the jobs you want to track automatically every night!
         DAILY_JOBS = [
             "Data Analyst"
