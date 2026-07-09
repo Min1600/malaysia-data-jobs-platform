@@ -11,3 +11,4 @@ streamlit
 pandas
 
 huggingface_hub
+apscheduler

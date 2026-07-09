@@ -1,9 +1,11 @@
-import os
-import requests
-import pandas as pd
 import streamlit as st
+import logging
+import sys
+import threading
+from datetime import datetime
+from run import job_scraper
+from apscheduler.schedulers.background import BackgroundScheduler
 
-# ... your existing code displaying data tables ...
 
 st.sidebar.header("⚙️ Live Scraper Controller")
 st.sidebar.write("Trigger an on-demand cloud scraping run on GitHub Actions.")
@@ -22,36 +24,66 @@ if date_input == 'all':
 #date_mapping = {"all": "None", "daily": "r86400", "weekly": "r604800", "monthly": "r2592000"}
 
 # 3. The Activation Button
-if st.sidebar.button("🚀 Trigger Cloud Scraper"):
-    # Fetch your hidden access token from Hugging Face environment variables
-    gh_token = os.environ.get("GH_PAT")
+if st.sidebar.button("🚀 Run Scraper"):
+
+    # 🌟 Create a separate background thread so the UI doesn't freeze!
+    scraper_thread = threading.Thread(
+        target=job_scraper,
+        kwargs={
+            "job_title": job_input,
+            "target_location": loc_input,
+            "date_range": date_input,
+            "run_type": "manual"
+        }
+    )
+    # Start the background task
+    scraper_thread.start()
+
+
+# 🌟 1. Configure the global root logger ONLY ONCE on application startup
+if "logger_initialized" not in st.session_state: # Streamlit specific safety guard
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+
+    # Mute sub-loggers
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("requests").setLevel(logging.WARNING)
+
+    # File Handler
+    import os
+    os.makedirs("logs", exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
+    file_handler = logging.FileHandler(f"logs/app-{timestamp}.log")
+    file_handler.setLevel(logging.INFO) 
+    file_formatter = logging.Formatter('%(asctime)s:%(name)s - [%(levelname)s]: %(message)s')
+    file_handler.setFormatter(file_formatter)
+
+    # Console Handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.DEBUG) 
+    console_formatter = logging.Formatter('[%(levelname)s]: %(message)s')
+    console_handler.setFormatter(console_formatter)
+
+    # Attach both
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
     
-    # Change these to match your exact github profile details
-    GITHUB_USERNAME = "Min1600"
-    REPO_NAME = "malaysia-data-jobs-platform"
-    WORKFLOW_FILE = "run-web-scraper.yml"  # Name of your workflow file
-    
-    if not gh_token:
-        st.sidebar.error("Missing 'GH_PAT' Secret in Hugging Face Settings.")
-    else:
-        with st.spinner("Waking up GitHub Action Runner..."):
-            url = f"https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/actions/workflows/{WORKFLOW_FILE}/dispatches"
-            headers = {
-                "Authorization": f"token {gh_token}",
-                "Accept": "application/vnd.github.v3+json"
-            }
-            payload = {
-                "ref": "main", # Run on your main branch code
-                "inputs": {
-                    "job_type": job_input,
-                    "location": loc_input,
-                    "date_range": date_input
-                }
-            }
-            
-            response = requests.post(url, headers=headers, json=payload)
-            
-            if response.status_code == 204:
-                st.sidebar.success("🎉 GitHub Workflow started! Your fresh data will show up here in a few minutes.")
-            else:
-                st.sidebar.error(f"Failed to connect. Error {response.status_code}: {response.text}")          
+    st.session_state["logger_initialized"] = True
+
+# 🌟 2. Now initialize file-specific loggers anywhere using __name__
+main_logger = logging.getLogger(__name__)
+main_logger.info("Application UI successfully booted up!")
+
+def daily_scraper():
+    # Injected values are passed directly into the function call here!
+    start_scraping_routine(
+        job_title="Data Analyst",
+        target_location="Kuala Lumpur",
+        date_range="daily",
+        run_type="scheduled"
+    )
+
+scheduler = BackgroundScheduler()
+# Runs every single night
+scheduler.add_job(automated_job, 'cron', hour=16, minute=0)
+scheduler.start()
