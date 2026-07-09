@@ -82,7 +82,7 @@ if __name__ == "__main__":
             main_logger.info("🏁 All scraping tasks completed successfully.")
     
     elif run_type == 'manual':
-
+        main_logger.info(date_range)
         if date_range == 'daily':
             ld_date_range = "r86400"
             js_date_range = 1
