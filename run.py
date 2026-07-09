@@ -17,7 +17,7 @@ load_dotenv(ROOT / ".env")
 job_title = os.environ.get("JOB_TYPE", "Data Analyst")
 target_location = os.environ.get("LOCATION", "Kuala Lumpur")
 date_range = os.environ.get("DATE_RANGE", "None")
-run_type = os.environ.get("RUN_TYPE", "manual")
+run_type = os.environ.get("RUN_TYPE")
 
 # Standardize "N/A" string back into Python's actual None type
 if date_range == "None":
@@ -58,7 +58,7 @@ main_logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
-
+    js_scraper(job_type = 'Data Analyst', location = target_location, date_range = 1)
     if run_type == 'daily':
         # 🌟 Define all the jobs you want to track automatically every night!
         DAILY_JOBS = [
