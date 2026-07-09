@@ -11,7 +11,10 @@ from curl_cffi import requests
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Referer": "https://www.google.com/"
 }
 
 # url for website to be scraped and path to save ingested data into
@@ -53,7 +56,7 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     try:
 
         # requests data from jobstreet
-        response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome", timeout = 10)
+        response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome120", timeout = 10)
         response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
 
     except requests.exceptions.Timeout:
@@ -92,6 +95,8 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     pages = math.ceil(int(total_jobs) / 30)
 
     js_logger.debug(f"Found {pages} pages")
+
+    time.sleep(random.uniform(3.0, 7.0))
 
     return pages
 
@@ -148,7 +153,7 @@ def get_jobs(response, filename, seen_ids):
         salary_el = card.find("span", attrs={"data-automation": "jobSalary"})
         
         # Call Detail Page for full Job Description
-        detail_res = requests.get(job_url, headers=HEADERS, impersonate="chrome")
+        detail_res = requests.get(job_url, headers=HEADERS, impersonate="chrome120")
         full_desc = ""
         desc_el = None
         
@@ -244,7 +249,7 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
 
         # test connection 
         try:
-            response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome", timeout = 10)
+            response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome120", timeout = 10)
             response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
         
         except requests.exceptions.Timeout:
