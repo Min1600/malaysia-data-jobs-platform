@@ -10,7 +10,7 @@ from huggingface_hub import HfApi
 from ingestion.jobstreet.jobstreet_scraper import js_scraper, get_total_pages
 from ingestion.linkedin.linkedin_scraper import ld_scraper
 
-load_dotenv()
+#load_dotenv()
 app_logger = logging.getLogger(__name__)
 
 def upload_artifacts_to_hf():
