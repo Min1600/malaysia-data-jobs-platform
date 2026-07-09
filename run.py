@@ -57,4 +57,4 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
         app_logger.warning('🛑 Undetermined run type task is unable to start!')
 
 if __name__ == "__main__":
-    
+    pass
