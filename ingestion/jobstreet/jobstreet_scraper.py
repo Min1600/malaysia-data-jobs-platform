@@ -31,6 +31,11 @@ daily, weekly, monthly = 1,7,31
 
 js_logger = logging.getLogger(__name__)
 
+proxies={
+        "http": "http://pwohzmiu:z5xgenvy4vvk@31.59.20.176:6754/",
+        "https": "http://pwohzmiu:z5xgenvy4vvk@31.59.20.176:6754/"
+    }
+
 def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     """
     calculates total number of pages of job listings for the specific job type, location and dates provided
@@ -56,7 +61,7 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     try:
 
         # requests data from jobstreet
-        response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome120", timeout = 10)
+        response = requests.get(BASE_URL, params=params, headers=HEADERS, proxies=proxies, impersonate="chrome120", timeout = 10)
         response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
 
     except requests.exceptions.Timeout:
@@ -249,7 +254,7 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
 
         # test connection 
         try:
-            response = requests.get(BASE_URL, params=params, headers=HEADERS, impersonate="chrome120", timeout = 10)
+            response = requests.get(BASE_URL, params=params, headers=HEADERS, proxies=proxies, impersonate="chrome120", timeout = 10)
             response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
         
         except requests.exceptions.Timeout:
