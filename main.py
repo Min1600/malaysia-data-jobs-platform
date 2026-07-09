@@ -25,9 +25,9 @@ if st.sidebar.button("🚀 Trigger Cloud Scraper"):
     gh_token = os.environ.get("GH_PAT")
     
     # Change these to match your exact github profile details
-    GITHUB_USERNAME = "YOUR_GITHUB_USERNAME"
-    REPO_NAME = "your-repo-name"
-    WORKFLOW_FILE = "hello_world.yml"  # Name of your workflow file
+    GITHUB_USERNAME = "Min1600"
+    REPO_NAME = "malaysia-data-jobs-platform"
+    WORKFLOW_FILE = "run-web-scraper.yml"  # Name of your workflow file
     
     if not gh_token:
         st.sidebar.error("Missing 'GH_PAT' Secret in Hugging Face Settings.")
