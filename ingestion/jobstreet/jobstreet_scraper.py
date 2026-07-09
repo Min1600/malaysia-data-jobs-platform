@@ -31,10 +31,24 @@ daily, weekly, monthly = 1,7,31
 
 js_logger = logging.getLogger(__name__)
 
-proxies={
-        "http": "http://pwohzmiu:z5xgenvy4vvk@31.59.20.176:6754/",
-        "https": "http://pwohzmiu:z5xgenvy4vvk@31.59.20.176:6754/"
+# 🔒 Fetch credentials safely from hidden environment memory
+PROXY_IP_1 = os.environ.get("PROXY_IP_1") 
+PROXY_PORT_1 = os.environ.get("PROXY_PORT_1")  
+PROXY_USER = os.environ.get("PROXY_USER") 
+PROXY_PASS = os.environ.get("PROXY_PASS")  
+
+# Only build the dict if the secrets exist, preventing crashes
+if all([PROXY_IP_1, PROXY_PORT_1, PROXY_USER, PROXY_PASS]):
+    # Dynamically builds: http://user:pass@ip:port
+    authenticated_proxy_url = f"http://{PROXY_USER}:{PROXY_PASS}@{PROXY_IP}:{PROXY_PORT}/"
+    
+    proxies = {
+        "http": authenticated_proxy_url,
+        "https": authenticated_proxy_url
     }
+else:
+    proxies = None
+    logger.warning("⚠️ Proxy secrets missing. Running without proxy mask.")
 
 def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     """
