@@ -15,6 +15,7 @@ date_input = st.sidebar.selectbox(
     "Date Range Filter", 
     options=["all", "daily", "weekly", "monthly"]
 )
+
 if date_input == 'all':
     date_input = 'None'
 # 2. Map frontend inputs to match your backend python variables
