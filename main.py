@@ -3,6 +3,7 @@ import logging
 import sys
 import os
 import threading
+import pandas as pd
 from datetime import datetime
 from huggingface_hub import hf_hub_download
 from run import job_scraper
