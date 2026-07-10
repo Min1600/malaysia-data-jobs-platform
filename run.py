@@ -54,6 +54,8 @@ def upload_artifacts_to_hf():
 
 def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_range="daily", run_type="scheduled"):
 
+    timestamp = datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
+
     if date_range == "None" or date_range is None:
         date_range = None
     
@@ -69,7 +71,7 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
 
         for job in DAILY_JOBS:
 
-            app_logger.info(f"⏰ Starting Scheduled web scraper run for {job} job listings.")
+            app_logger.info(f"⏰ Starting Scheduled web scraper run for {job} job listings. {timestamp}")
 
             app_logger.info("🚀 Scraping jobs from Jobstreet")
             js_scraper(job_type = job, location = s_target_location, date_range = js_date_range)
@@ -86,7 +88,7 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
             ld_date_range = "r86400"
             js_date_range = 1
 
-        app_logger.info(f"Starting web scraper run for {job_title} job listings.")
+        app_logger.info(f"Starting web scraper run for {job_title} job listings. {timestamp}")
         app_logger.info("🚀 Scraping jobs from Jobstreet")
         js_scraper(job_type = job_title, location = target_location, date_range = js_date_range)
 
