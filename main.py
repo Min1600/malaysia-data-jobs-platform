@@ -4,9 +4,12 @@ import sys
 import os
 import threading
 from datetime import datetime
+from huggingface_hub import hf_hub_download
 from run import job_scraper
 from apscheduler.schedulers.background import BackgroundScheduler
 
+
+HF_TOKEN = os.environ.get("HF_TOKEN")
 # ==========================================
 # 1. CORE INFRASTRUCTURE: LOGGING (Runs ONCE)
 # ==========================================
@@ -71,6 +74,32 @@ if "scheduler_initialized" not in st.session_state:
 # ==========================================
 # 3. STREAMLIT USER INTERFACE & BUTTONS
 # ==========================================
+
+
+def fetch_data(website):
+    current_time = datetime.now().strftime('%d-%m-%Y')
+    try:
+        # 1. Pull the specific data vault file down from your private dataset
+        local_file_path = hf_hub_download(
+            repo_id="Amin1600/Web_Scraper_Data",
+            filename=f"job_data/raw/{website}/{current_time}.jsonl",
+            repo_type="dataset",
+            token=HF_TOKEN
+        )
+        
+        # 2. Read it directly into a Pandas DataFrame
+        df = pd.read_json(local_file_path, lines=True)
+        print(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
+        return df
+
+    except Exception as e:
+        print(f"❌ Error downloading database: {e}")
+        return None
+        
+st.write("Today's scraped data")
+st.write(fetch_data('linkedin'))
+st.write(fetch_data('jobstreet'))
+
 st.sidebar.header("⚙️ Live Scraper Controller")
 st.sidebar.write("Trigger an on-demand live scraping run right inside this Space.")
 
