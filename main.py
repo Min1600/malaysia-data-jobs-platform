@@ -91,14 +91,17 @@ def fetch_data(website):
         # 2. Read it directly into a Pandas DataFrame
         df = pd.read_json(local_file_path, lines=True)
         print(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
-        return df
+        data = pd.DataFrame(df)
+        return data["job_title", "company", "salary_min","posting_date","skills"]
 
     except Exception as e:
         print(f"❌ Error downloading database: {e}")
         return None
 
 st.write("Today's scraped data")
+st.header("Linkedin Data")
 st.write(fetch_data('linkedin'))
+st.header("Jobstreet Data")
 st.write(fetch_data('jobstreet'))
 
 st.sidebar.header("⚙️ Live Scraper Controller")
