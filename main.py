@@ -28,8 +28,8 @@ if "logger_initialized" not in st.session_state:
 
     # File Handler
     os.makedirs("logs", exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
-    file_handler = logging.FileHandler(f"logs/app-{timestamp}.log")
+    timestamp = datetime.now().strftime("%d-%m-%Y(%H:%M:%S)")
+    file_handler = logging.FileHandler(f"logs/job-scraper-{timestamp}.log")
     file_handler.setLevel(logging.INFO) 
     file_formatter = logging.Formatter('%(asctime)s:%(name)s - [%(levelname)s]: %(message)s')
     file_handler.setFormatter(file_formatter)
@@ -106,7 +106,7 @@ st.header("Jobstreet Data")
 st.write(fetch_data('jobstreet'))
 
 st.sidebar.header("⚙️ Live Scraper Controller")
-st.sidebar.write("Trigger an on-demand live scraping run right inside this Space.")
+st.sidebar.write("Serch for job postings of your choice!")
 
 # UI Input fields
 job_input = st.sidebar.text_input("Job Title Keyword", "Data Analyst")
