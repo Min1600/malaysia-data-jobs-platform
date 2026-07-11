@@ -293,6 +293,8 @@ def ld_scraper(job_type, date_range = None, location = 'Kuala Lumpur'):
     if date_range is None:
 
         # run the linkedin job scraper and get total number of jobs collected
+        ld_logger.info(f"Collecting all job street {job_type} job listings in {location}.")
+
         total_collected = _run_scrape(job_type, date_range, location, max_jobs=975)
         ld_logger.info(f"\n✅ Successfully saved all {job_type} job listings from linkedin. Captured {total_collected} jobs listings!")
     
@@ -306,12 +308,13 @@ def ld_scraper(job_type, date_range = None, location = 'Kuala Lumpur'):
             monthly: "last month"
         }
 
-        # run the linkedin job scraper and get total number of jobs collected
-        total_collected = _run_scrape(job_type, date_range, location, max_jobs = None)
-
         # get the phrase to use based on the date_range given
         freq_type = timelines[date_range]
-        
+
+        ld_logger.info(f"Collecting all jobstreet {job_type} job listings from the {freq_type} in {location}")
+
+        # run the linkedin job scraper and get total number of jobs collected
+        total_collected = _run_scrape(job_type, date_range, location, max_jobs = None)
         ld_logger.info(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings from linkedin, posted within the {freq_type}")
     
     else:

@@ -59,7 +59,7 @@ def test_connection(proxy_pool, url, params):
     # Loop through your proxies one by one if one fails
     for i, proxy in enumerate(proxy_pool):
         try:
-            js_logger.info(f"🔄 Trying request using Proxy #{i+1}...")
+            js_logger.debug(f"🔄 Trying request using Proxy #{i+1}...")
             
             response = requests.get(
                 url, 
@@ -143,7 +143,7 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     # calculate number of pages (jobstreet has 30 jobs per page)
     pages = math.ceil(int(total_jobs) / 30)
 
-    js_logger.debug(f"Found {pages} pages")
+    js_logger.info(f"Found {pages} page(s) on Jobstreet")
 
     time.sleep(random.uniform(3.0, 7.0))
 
@@ -202,6 +202,7 @@ def get_jobs(response, filename, seen_ids):
         salary_el = card.find("span", attrs={"data-automation": "jobSalary"})
         
         # Call Detail Page for full Job Description
+        js_logger.info("Calling job detail page for full job description.")
         detail_res = test_connection(PROXY_POOL, job_url, params=None)
         full_desc = ""
         desc_el = None
