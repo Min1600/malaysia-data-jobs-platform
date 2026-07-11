@@ -55,14 +55,14 @@ else:
 
 
 
-def test_connection(proxy_pool, params):
+def test_connection(proxy_pool, url, params):
     # Loop through your proxies one by one if one fails
     for i, proxy in enumerate(proxy_pool):
         try:
             js_logger.info(f"🔄 Trying request using Proxy #{i+1}...")
             
             response = requests.get(
-                BASE_URL, 
+                url, 
                 params=params, 
                 headers=HEADERS, 
                 proxies=proxy, 
@@ -120,7 +120,7 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     "page": 1
     }
 
-    response = test_connection(PROXY_POOL, params)
+    response = test_connection(PROXY_POOL, BASE_URL, params)
 
     if response is None:
         js_logger.error("🚨 All 10 proxies in the pool failed to fetch the page. Aborting Task!")
@@ -202,7 +202,7 @@ def get_jobs(response, filename, seen_ids):
         salary_el = card.find("span", attrs={"data-automation": "jobSalary"})
         
         # Call Detail Page for full Job Description
-        detail_res = requests.get(job_url, headers=HEADERS, proxies=proxies, impersonate="chrome120")
+        detail_res = test_connection(PROXY_POOL, job_url, params=None)
         full_desc = ""
         desc_el = None
         
@@ -296,7 +296,7 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
             "page": page_counter
         }
 
-        response = test_connection(PROXY_POOL, params)
+        response = test_connection(PROXY_POOL, BASE_URL, params)
 
         if response is None:
             js_logger.error("🚨 All 10 proxies in the pool failed to fetch the page. Aborting Task!")
