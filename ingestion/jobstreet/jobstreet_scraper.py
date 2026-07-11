@@ -32,23 +32,72 @@ daily, weekly, monthly = 1,7,31
 js_logger = logging.getLogger(__name__)
 
 # 🔒 Fetch credentials safely from hidden environment memory
-PROXY_IP_1 = os.environ.get("PROXY_IP_1") 
-PROXY_PORT_1 = os.environ.get("PROXY_PORT_1")  
+PROXY_IP_LIST = [os.environ.get(f"PROXY_IP_{i}") for i in range(1, 11)]
+PROXY_PORT_LIST = [os.environ.get(f"PROXY_PORT_{i}") for i in range(1, 11)]
+
 PROXY_USER = os.environ.get("PROXY_USER") 
-PROXY_PASS = os.environ.get("PROXY_PASS")  
+PROXY_PASS = os.environ.get("PROXY_PASS")
+
+PROXY_POOL = []
 
 # Only build the dict if the secrets exist, preventing crashes
-if all([PROXY_IP_1, PROXY_PORT_1, PROXY_USER, PROXY_PASS]):
-    # Dynamically builds: http://user:pass@ip:port
-    authenticated_proxy_url = f"http://{PROXY_USER}:{PROXY_PASS}@{PROXY_IP_1}:{PROXY_PORT_1}/"
-    
-    proxies = {
-        "http": authenticated_proxy_url,
-        "https": authenticated_proxy_url
-    }
+if all([PROXY_USER, PROXY_PASS]) and len(PROXY_IP_LIST) == len(PROXY_PORT_LIST):
+    for ip, port in zip(PROXY_IP_LIST, PROXY_PORT_LIST):
+        if ip.strip() and port.strip():
+            url = f"http://{PROXY_USER}:{PROXY_PASS}@{ip.strip()}:{port.strip()}"
+            PROXY_POOL.append({
+                "http": url,
+                "https": url
+            })
 else:
     proxies = None
-    logger.warning("⚠️ Proxy secrets missing. Running without proxy mask.")
+    js_logger.warning("⚠️ Proxy secrets missing. Running without proxy mask.")
+
+
+
+def test_connection(proxy_pool, params):
+    # Loop through your proxies one by one if one fails
+    for i, proxy in enumerate(proxy_pool):
+        try:
+            js_logger.info(f"🔄 Trying request using Proxy #{i+1}...")
+            
+            response = requests.get(
+                BASE_URL, 
+                params=params, 
+                headers=HEADERS, 
+                proxies=proxy, 
+                impersonate="chrome120", 
+                timeout = 10)
+            response.raise_for_status()
+
+            js_logger.info(f"Proxy #{i+1} is successful!")
+            
+            return response # 🎉 Success! Return the response and exit the proxy loop
+
+        except requests.exceptions.Timeout:
+
+            js_logger.error(f"⏱️ Request timed out after 10 seconds. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            continue
+
+        # Catches bad status codes (4xx or 5xx)
+        except requests.exceptions.HTTPError as e:
+            status = e.response.status_code if e.response else "Unknown"
+            reason = e.response.reason if e.response else str(e)
+
+            js_logger.error(f"🛑 HTTP Error: {status} - {reason}. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            continue
+        
+        # Catches connection drops, timeouts, DNS issues where NO response was given
+        except requests.exceptions.RequestException as e:
+
+            js_logger.error(f"💥 Network level error occurred (No response received): {e}. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            continue
+            
+    # If the code reaches here, it means ALL 10 proxies failed
+    return None
+
+
+
 
 def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     """
@@ -71,29 +120,10 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     "page": 1
     }
 
-    # test connection 
-    try:
+    response = test_connection(PROXY_POOL, params)
 
-        # requests data from jobstreet
-        response = requests.get(BASE_URL, params=params, headers=HEADERS, proxies=proxies, impersonate="chrome120", timeout = 10)
-        response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
-
-    except requests.exceptions.Timeout:
-        js_logger.error("⏱️ Request timed out after 10 seconds. Unable to determine number of pages. Aborting task!")
-        return None
-
-    # Catches bad status codes (4xx or 5xx)
-    except requests.exceptions.HTTPError as e:
-        status = e.response.status_code if e.response else "Unknown"
-        reason = e.response.reason if e.response else str(e)
-
-        js_logger.error(
-            f"🛑 HTTP Error: {status} - {reason}. Unable to determine number of pages. Aborting task!")
-        return None
-    
-    # Catches connection drops, timeouts, DNS issues where NO response was given
-    except requests.exceptions.RequestException as e:
-        js_logger.error(f"💥 Network level error occurred (No response received): {e}. Unable to determine number of pages aborting task!")
+    if response is None:
+        js_logger.error("🚨 All 10 proxies in the pool failed to fetch the page. Aborting Task!")
         return None
 
     # use beautiful soup to get text from page
@@ -266,29 +296,12 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
             "page": page_counter
         }
 
-        # test connection 
-        try:
-            response = requests.get(BASE_URL, params=params, headers=HEADERS, proxies=proxies, impersonate="chrome120", timeout = 10)
-            response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
-        
-        except requests.exceptions.Timeout:
-            js_logger.error("⏱️ Request timed out after 10 seconds. Unable to determine number of pages. Aborting task!")
-            break
+        response = test_connection(PROXY_POOL, params)
 
-        # Catches bad status codes (4xx or 5xx)
-        except requests.exceptions.HTTPError as e:
-            status = e.response.status_code if e.response else "Unknown"
-            reason = e.response.reason if e.response else str(e)
-
-            js_logger.error(
-                f"🛑 HTTP Error: {status} - {reason}. Unable to determine number of pages. Aborting task!")
+        if response is None:
+            js_logger.error("🚨 All 10 proxies in the pool failed to fetch the page. Aborting Task!")
             break
         
-        # Catches connection drops, timeouts, DNS issues where NO response was given
-        except requests.exceptions.RequestException as e:
-            js_logger.error(f"💥 Network level error occurred (No response received): {e}. Unable to determine number of pages aborting task!")
-            break
-
         # Save jobs with a timeline scraped on the same day into its own file
         if date_range is None:
             filename = os.path.join(ABS_PATH, "historic.jsonl")
