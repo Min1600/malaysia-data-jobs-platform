@@ -62,14 +62,19 @@ def daily_scraper():
         run_type="scheduled"
     )
 
-if "scheduler_initialized" not in st.session_state:
+@st.cache_resource
+def initialize_global_scheduler():
     scheduler = BackgroundScheduler()
+    
     # Runs every single night at 16:00 UTC (Midnight Malaysia Time)
     scheduler.add_job(daily_scraper, 'cron', hour=16, minute=0)
     scheduler.start()
     
-    st.session_state["scheduler_initialized"] = True
-    main_logger.info("Scheduler successfully armed for midnight runs.")
+    main_logger.info("🚀 [SINGLETON]: Scheduler successfully armed for midnight runs.")
+    return scheduler
+
+# 2. Call it cleanly in your app. Streamlit handles the safety checks behind the scenes!
+global_scheduler = initialize_global_scheduler()
 
 
 # ==========================================
