@@ -97,7 +97,7 @@ def fetch_data(website):
         df = pd.read_json(local_file_path, lines=True)
         print(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
 
-        selected_columns = ["job_title", "company", "salary_min", "posting_date", "skills", "emp_type"]
+        selected_columns = ["job_title", "company", "salary_min", "posting_date", "skills", "employment_type"]
         return df[selected_columns]
 
     except Exception as e:
