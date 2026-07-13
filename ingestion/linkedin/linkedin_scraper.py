@@ -136,11 +136,14 @@ def scraper(job_cards, filename, seen_ids):
         
         # Extracting specific criteria tags (Employment Type)
         emp_type = "N/A"
+        industry_el = "N/A"
         criteria_list = detail_soup.find_all("li", class_="description__job-criteria-item")
 
         for item in criteria_list:
             if "Employment type" in item.text:
                 emp_type = item.text.replace("Employment type", "").strip()
+            if "Job function" in item.text:
+                industry_el = item.text.replace("Job function", "").strip()
 
         # format data to json
         raw_record = {
@@ -154,6 +157,7 @@ def scraper(job_cards, filename, seen_ids):
             "employment_type": emp_type,
             "salary_min": None,  # LinkedIn Guest UI rarely lists MYR salaries openly
             "salary_max": None,  # Will parse these fields in the JobStreet pipeline
+            "industry": industry_el,
             "posting_date": date_el["datetime"] if date_el and date_el.has_attr("datetime") else (date_el.text.strip() if date_el else "N/A"),
             "job_description": full_desc,
             "requirements": "", 
