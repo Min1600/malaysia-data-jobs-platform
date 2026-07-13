@@ -57,6 +57,15 @@ else:
 
 def test_connection(proxy_pool, url, params):
     # Loop through your proxies one by one if one fails
+    if proxy_pool == []:
+        response = requests.get(
+                url, 
+                params=params, 
+                headers=HEADERS,  
+                impersonate="chrome120", 
+                timeout = 10)
+        return response
+
     for i, proxy in enumerate(proxy_pool):
         try:
             js_logger.debug(f"🔄 Trying request using Proxy #{i+1}...")
@@ -196,10 +205,12 @@ def get_jobs(response, filename, seen_ids):
         # removes repeated jobs by adding to set() data type
         seen_ids.add(job_id)
 
+        """
         # Extract meta elements from card layout
         company_el = card.find("a", attrs={"data-automation": "jobCompany"})
         location_el = card.find("a", attrs={"data-automation": "jobLocation"})
         salary_el = card.find("span", attrs={"data-automation": "jobSalary"})
+        """
         
         # Call Detail Page for full Job Description
         js_logger.info("Calling job detail page for full job description.")
@@ -212,13 +223,21 @@ def get_jobs(response, filename, seen_ids):
             # get job description/details
             detail_soup = BeautifulSoup(detail_res.text, "html.parser")
 
+            # Extract meta elements from details page
+            company_el = detail_soup.find("span", attrs={"data-automation": "advertiser-name"})
+            location_el = detail_soup.find("span", attrs={"data-automation": "job-detail-location"})
+            industry_el = detail_soup.find("span", attrs={"data-automation": "job-detail-classifications"})
+            emp_el = detail_soup.find("span", attrs={"data-automation": "job-detail-work-type"})
+            salary_el = detail_soup.find("span", attrs={"data-automation": "job-detail-salary"})
+            posted_el = detail_soup.find("span", string=re.compile("Posted"))
+
             # Extract Raw Description Text
             desc_el = detail_soup.find(attrs={"data-automation": "jobAdDetails"})
             full_desc = desc_el.text.strip() if desc_el else ""
 
         # if no response from description page skip job (dont write to file)
         else:
-            print(f"❌ Skipped ID {job_id}: Detail page unreachable.")
+            js_logger.info(f"❌ Skipped ID {job_id}: Detail page unreachable.")
             num_jobs -= 1
             continue
 
@@ -231,10 +250,11 @@ def get_jobs(response, filename, seen_ids):
             "job_title": title_el.text.strip() if title_el else "N/A",
             "company": company_el.text.strip() if company_el else "N/A",
             "location": location_el.text.strip() if location_el else "N/A",
-            "employment_type": "N/A", # Will pull from description processing step
+            "employment_type": emp_el.text.strip() if emp_el else "N/A",
             "salary_min": salary_el.text.strip() if salary_el else "N/A",  
-            "salary_max": salary_el.text.strip() if salary_el else "N/A",  
-            "posting_date": "N/A",
+            "salary_max": salary_el.text.strip() if salary_el else "N/A",
+            "industry": industry_el.text.strip() if industry_el else "N/A",
+            "posting_date": posted_el.text.strip() if posted_el else "N/A",
             "job_description": full_desc,
             "requirements": "", 
             "skills": [s for s in ["SQL", "Python", "Tableau", "Power BI", "Excel", "Spark"] if s.lower() in full_desc.lower()],
@@ -309,7 +329,7 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
         else:
             current_time = datetime.now().strftime('%d-%m-%Y')
             filename = os.path.join(ABS_PATH, f"{current_time}.jsonl")
-        
+
         # get total number of jobs on current page
         num_jobs = get_jobs(response, filename, seen_ids)
 
@@ -371,4 +391,3 @@ def js_scraper(job_type, date_range = None, location = "Kuala Lumpur"):
         js_logger.info(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings in {location} from jobstreet, posted within the {freq_type}")
     else:
         js_logger.warning('Error, input needs to be 1,7,31 or None')
-    
