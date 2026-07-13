@@ -88,20 +88,20 @@ def fetch_data(website):
         # 1. Pull the specific data vault file down from your private dataset
         local_file_path = hf_hub_download(
             repo_id="Amin1600/Web_Scraper_Data",
-            filename=f"job_data/raw/{website}/09-07-2026.jsonl",
+            filename=f"job_data/raw/{website}/13-07-2026.jsonl",
             repo_type="dataset",
             token=HF_TOKEN
         )
         
         # 2. Read it directly into a Pandas DataFrame
         df = pd.read_json(local_file_path, lines=True)
-        print(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
+        main_logger.info(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
 
-        selected_columns = ["job_title", "company", "salary_min", "posting_date", "skills", "employment_type"]
-        return df[selected_columns]
+        #selected_columns = ["job_title", "company", "salary_min", "posting_date", "skills", "employment_type"]
+        return df
 
     except Exception as e:
-        print(f"❌ Error downloading database: {e}")
+        main_logger.warning(f"❌ Error downloading database: {e}")
         return None
 
 st.write("Today's scraped data")
