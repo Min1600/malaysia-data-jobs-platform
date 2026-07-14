@@ -85,7 +85,7 @@ def test_connection(proxy_pool, url, params):
 
         except requests.exceptions.Timeout:
 
-            js_logger.error(f"⏱️ Request timed out after 10 seconds. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            js_logger.exception(f"⏱️ Request timed out after 10 seconds. Proxy #{i+1} failed, Retrying with the next available proxy...")
             continue
 
         # Catches bad status codes (4xx or 5xx)
@@ -93,13 +93,13 @@ def test_connection(proxy_pool, url, params):
             status = e.response.status_code if e.response else "Unknown"
             reason = e.response.reason if e.response else str(e)
 
-            js_logger.error(f"🛑 HTTP Error: {status} - {reason}. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            js_logger.exception(f"🛑 HTTP Error: {status} - {reason}. Proxy #{i+1} failed, Retrying with the next available proxy...")
             continue
         
         # Catches connection drops, timeouts, DNS issues where NO response was given
         except requests.exceptions.RequestException as e:
 
-            js_logger.error(f"💥 Network level error occurred (No response received): {e}. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            js_logger.exception(f"💥 Network level error occurred (No response received): {e}. Proxy #{i+1} failed, Retrying with the next available proxy...")
             continue
             
     # If the code reaches here, it means ALL 10 proxies failed
@@ -226,7 +226,7 @@ def get_jobs(response, filename, seen_ids):
             # Extract meta elements from details page
             company_el = detail_soup.find("span", attrs={"data-automation": "advertiser-name"})
             location_el = detail_soup.find("span", attrs={"data-automation": "job-detail-location"})
-            industry_el = detail_soup.find("span", attrs={"data-automation": "job-detail-classifications"})
+            department_el = detail_soup.find("span", attrs={"data-automation": "job-detail-classifications"})
             emp_el = detail_soup.find("span", attrs={"data-automation": "job-detail-work-type"})
             salary_el = detail_soup.find("span", attrs={"data-automation": "job-detail-salary"})
             posted_el = detail_soup.find("span", string=re.compile("Posted"))
@@ -253,7 +253,7 @@ def get_jobs(response, filename, seen_ids):
             "employment_type": emp_el.text.strip() if emp_el else "N/A",
             "salary_min": salary_el.text.strip() if salary_el else "N/A",  
             "salary_max": salary_el.text.strip() if salary_el else "N/A",
-            "industry": industry_el.text.strip() if industry_el else "N/A",
+            "department": department_el.text.strip() if department_el else "N/A",
             "posting_date": posted_el.text.strip() if posted_el else "N/A",
             "job_description": full_desc,
             "requirements": "", 
@@ -270,12 +270,12 @@ def get_jobs(response, filename, seen_ids):
 
         except IOError as e:
             # Catches disk full, permission denied, or missing directory errors
-            js_logger.error(f"💾 File write failed! Could not append job to {filename}. Error: {e}")
+            js_logger.exception(f"💾 File write failed! Could not append job to {filename}. Error: {e}")
             return num_jobs
         
         except TypeError as e:
             # Catches situations where raw_record contains an object json cannot serialize (e.g., datetime objects)
-            js_logger.error(f"JSON serialization failed for job data. Serialization Error: {e}")
+            js_logger.exception(f"JSON serialization failed for job data. Serialization Error: {e}")
             return num_jobs
 
     return num_jobs
