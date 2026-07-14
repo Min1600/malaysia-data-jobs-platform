@@ -173,9 +173,19 @@ def keep_alive(space_url, interval_seconds=7200):
 # Replace this with your exact Hugging Face Space Direct URL
 MY_SPACE_URL = "https://amin1600-web-scraper-data.hf.space" 
 
-keep_alive_thread = threading.Thread(
-    target=keep_alive, 
-    args=(MY_SPACE_URL,), 
-    daemon=True # Daemon ensures the thread dies if the main app is manually stopped
-)
-keep_alive_thread.start()
+# Using st.cache_resource ensures this code block executes EXACTLY ONCE 
+# when the server boots up, and never again during page refreshes.
+@st.cache_resource
+def start_lifetime_keep_alive():
+    MY_SPACE_URL = "https://amin1600-web-scraper-data.hf.space" 
+    
+    keep_alive_thread = threading.Thread(
+        target=keep_alive, 
+        args=(MY_SPACE_URL,), 
+        daemon=True # Dies cleanly if the Streamlit server stops
+    )
+    keep_alive_thread.start()
+    return "Keep-alive thread deployed successfully."
+
+# Trigger the guarded thread launcher
+keep_alive_status = start_lifetime_keep_alive()
