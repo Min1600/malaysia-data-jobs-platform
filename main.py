@@ -4,6 +4,7 @@ import sys
 import os
 import threading
 import time
+import requests
 import pandas as pd
 from datetime import datetime
 from huggingface_hub import hf_hub_download
@@ -16,7 +17,8 @@ HF_TOKEN = os.environ.get("HF_TOKEN")
 # ==========================================
 # 1. CORE INFRASTRUCTURE: LOGGING (Runs ONCE)
 # ==========================================
-if "logger_initialized" not in st.session_state:
+@st.cache_resource
+def initialize_global_logging():
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)
 
@@ -51,8 +53,9 @@ if "logger_initialized" not in st.session_state:
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
     
-    st.session_state["logger_initialized"] = True
+    return "Logging successfully initialized"
 
+initialize_global_logging()
 main_logger = logging.getLogger(__name__)
 main_logger.info("Application UI successfully booted up!")
 
