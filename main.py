@@ -3,11 +3,13 @@ import logging
 import sys
 import os
 import threading
+import time
 import pandas as pd
 from datetime import datetime
 from huggingface_hub import hf_hub_download
 from run import job_scraper
 from apscheduler.schedulers.background import BackgroundScheduler
+from logging.handlers import TimedRotatingFileHandler
 
 
 HF_TOKEN = os.environ.get("HF_TOKEN")
@@ -28,8 +30,13 @@ if "logger_initialized" not in st.session_state:
 
     # File Handler
     os.makedirs("logs", exist_ok=True)
-    timestamp = datetime.now().strftime("%d-%m-%Y(%H:%M:%S)")
-    file_handler = logging.FileHandler(f"logs/job-scraper-{timestamp}.log")
+    file_handler = TimedRotatingFileHandler(
+        filename=os.path.join(log_directory, "job-scraper.log"),
+        when="midnight",
+        interval=1,
+        backupCount=30,  # Keeps 30 days of archives
+        utc=True         # Syncs perfectly with Hugging Face UTC server clock
+    )
     file_handler.setLevel(logging.INFO) 
     file_formatter = logging.Formatter('%(asctime)s:%(name)s - [%(levelname)s]: %(message)s')
     file_handler.setFormatter(file_formatter)
@@ -137,3 +144,38 @@ if st.sidebar.button("🚀 Run Scraper"):
     )
     scraper_thread.start()
     st.sidebar.success("🛰️ Scraper launched in background thread!")
+
+
+
+def keep_alive(space_url, interval_seconds=7200):
+    """
+    Pings hugging face every 2 hours to ensure it doesnt go to sleep
+
+    Args:
+        space_url: url of hugging face server
+        interval_seconds: how often to ping the server in seconds
+
+    Return:
+        None
+    """
+    
+    while True:
+        try:
+            # Self-ping the space UI to keep the container awake
+            response = requests.get(space_url, timeout=10)
+            main_logger.debug(f"💓 Keep-alive ping sent to {space_url}. Status: {response.status_code}")
+        except Exception as e:
+            main_logger.debug(f"⚠️ Keep-alive ping failed: {e}")
+        
+        time.sleep(interval_seconds)
+
+# 🚀 Start the keep-alive daemon thread when the app boots up
+# Replace this with your exact Hugging Face Space Direct URL
+MY_SPACE_URL = "https://amin1600-web-scraper-data.hf.space" 
+
+keep_alive_thread = threading.Thread(
+    target=keep_alive, 
+    args=(MY_SPACE_URL,), 
+    daemon=True # Daemon ensures the thread dies if the main app is manually stopped
+)
+keep_alive_thread.start()
