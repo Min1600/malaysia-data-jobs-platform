@@ -98,19 +98,19 @@ def scraper(job_cards, filename, seen_ids):
             detail_res.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
         
         except requests.exceptions.Timeout:
-            ld_logger.error("⏱️ Request timed out after 10 seconds. Unable to determine number of pages. Aborting task!")
+            ld_logger.exception("⏱️ Request timed out after 10 seconds. Unable to determine number of pages. Aborting task!")
 
         # Catches bad status codes (4xx or 5xx)
         except requests.exceptions.HTTPError as e:
             status = e.response.status_code if e.response else "Unknown"
             reason = e.response.reason if e.response else str(e)
 
-            ld_logger.error(
+            ld_logger.exception(
                 f"🛑 HTTP Error: {status} - {reason}. Unable to determine number of pages. Aborting task!")
         
         # Catches connection drops, timeouts, DNS issues where NO response was given
         except requests.exceptions.RequestException as e:
-            ld_logger.error(f"💥 Network level error occurred (No response received): {e}. Unable to determine number of pages aborting task!")
+            ld_logger.exception(f"💥 Network level error occurred (No response received): {e}. Unable to determine number of pages aborting task!")
 
         full_desc = ""
         desc_el = None
@@ -136,14 +136,14 @@ def scraper(job_cards, filename, seen_ids):
         
         # Extracting specific criteria tags (Employment Type)
         emp_type = "N/A"
-        industry_el = "N/A"
+        department_el = "N/A"
         criteria_list = detail_soup.find_all("li", class_="description__job-criteria-item")
 
         for item in criteria_list:
             if "Employment type" in item.text:
                 emp_type = item.text.replace("Employment type", "").strip()
             if "Job function" in item.text:
-                industry_el = item.text.replace("Job function", "").strip()
+                department_el = item.text.replace("Job function", "").strip()
 
         # format data to json
         raw_record = {
@@ -157,7 +157,7 @@ def scraper(job_cards, filename, seen_ids):
             "employment_type": emp_type,
             "salary_min": None,  # LinkedIn Guest UI rarely lists MYR salaries openly
             "salary_max": None,  # Will parse these fields in the JobStreet pipeline
-            "industry": industry_el,
+            "department": department_el,
             "posting_date": date_el["datetime"] if date_el and date_el.has_attr("datetime") else (date_el.text.strip() if date_el else "N/A"),
             "job_description": full_desc,
             "requirements": "", 
@@ -230,7 +230,7 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
             response.raise_for_status() # Automatically triggers HTTPError if status is 4xx or 5xx
         
         except requests.exceptions.Timeout:
-            ld_logger.error("⏱️ Request timed out after 10 seconds. Unable to determine number of pages. Aborting task!")
+            ld_logger.exception("⏱️ Request timed out after 10 seconds. Unable to determine number of pages. Aborting task!")
             break
 
         # Catches bad status codes (4xx or 5xx)
@@ -238,13 +238,12 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
             status = e.response.status_code if e.response else "Unknown"
             reason = e.response.reason if e.response else str(e)
 
-            ld_logger.error(
-                f"🛑 HTTP Error: {status} - {reason}. Unable to determine number of pages. Aborting task!")
+            ld_logger.exception(f"🛑 HTTP Error: {status} - {reason}. Unable to determine number of pages. Aborting task!")
             break
         
         # Catches connection drops, timeouts, DNS issues where NO response was given
         except requests.exceptions.RequestException as e:
-            ld_logger.error(f"💥 Network level error occurred (No response received): {e}. Unable to determine number of pages aborting task!")
+            ld_logger.exception(f"💥 Network level error occurred (No response received): {e}. Unable to determine number of pages aborting task!")
             break
 
         # collects all job listings
