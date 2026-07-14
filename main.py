@@ -147,35 +147,3 @@ if st.sidebar.button("🚀 Run Scraper"):
 
 
 
-def keep_alive(space_url, interval_seconds=7200):
-    """
-    Pings hugging face every 2 hours to ensure it doesnt go to sleep
-
-    Args:
-        space_url: url of hugging face server
-        interval_seconds: how often to ping the server in seconds
-
-    Return:
-        None
-    """
-    
-    while True:
-        try:
-            # Self-ping the space UI to keep the container awake
-            response = requests.get(space_url, timeout=10)
-            main_logger.debug(f"💓 Keep-alive ping sent to {space_url}. Status: {response.status_code}")
-        except Exception as e:
-            main_logger.debug(f"⚠️ Keep-alive ping failed: {e}")
-        
-        time.sleep(interval_seconds)
-
-# 🚀 Start the keep-alive daemon thread when the app boots up
-# Replace this with your exact Hugging Face Space Direct URL
-MY_SPACE_URL = "https://amin1600-web-scraper-data.hf.space" 
-
-keep_alive_thread = threading.Thread(
-    target=keep_alive, 
-    args=(MY_SPACE_URL,), 
-    daemon=True # Daemon ensures the thread dies if the main app is manually stopped
-)
-keep_alive_thread.start()
