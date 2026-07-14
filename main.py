@@ -172,15 +172,11 @@ def keep_alive(space_url, interval_seconds=7200):
         
         time.sleep(interval_seconds)
 
-# 🚀 Start the keep-alive daemon thread when the app boots up
-# Replace this with your exact Hugging Face Space Direct URL
-MY_SPACE_URL = "https://amin1600-web-scraper-data.hf.space" 
-
 # Using st.cache_resource ensures this code block executes EXACTLY ONCE 
 # when the server boots up, and never again during page refreshes.
 @st.cache_resource
 def start_lifetime_keep_alive():
-    MY_SPACE_URL = "https://amin1600-web-scraper-data.hf.space" 
+    MY_SPACE_URL = "http://localhost:8501/_stcore/health"
     
     keep_alive_thread = threading.Thread(
         target=keep_alive, 
