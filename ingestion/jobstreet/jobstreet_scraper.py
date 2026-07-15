@@ -85,7 +85,7 @@ def test_connection(proxy_pool, url, params):
 
         except requests.exceptions.Timeout:
 
-            js_logger.exception(f"⏱️ Request timed out after 10 seconds. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            js_logger.error(f"⏱️ Request timed out after 10 seconds. Proxy #{i+1} failed, Retrying with the next available proxy...")
             continue
 
         # Catches bad status codes (4xx or 5xx)
@@ -93,13 +93,13 @@ def test_connection(proxy_pool, url, params):
             status = e.response.status_code if e.response else "Unknown"
             reason = e.response.reason if e.response else str(e)
 
-            js_logger.exception(f"🛑 HTTP Error: {status} - {reason}. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            js_logger.error(f"🛑 HTTP Error: {status} - {reason}. Proxy #{i+1} failed, Retrying with the next available proxy...")
             continue
         
         # Catches connection drops, timeouts, DNS issues where NO response was given
         except requests.exceptions.RequestException as e:
 
-            js_logger.exception(f"💥 Network level error occurred (No response received): {e}. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            js_logger.error(f"💥 Network level error occurred (No response received): {e}. Proxy #{i+1} failed, Retrying with the next available proxy...")
             continue
             
     # If the code reaches here, it means ALL 10 proxies failed
