@@ -10,11 +10,32 @@ from huggingface_hub import HfApi
 from ingestion.jobstreet.jobstreet_scraper import js_scraper, get_total_pages
 from ingestion.linkedin.linkedin_scraper import ld_scraper
 
+SEARCH_TERMS = [
+    "Data Engineer",
+    "Junior Data Engineer",
+    "Analytics Engineer",
+    "Data Warehouse Developer",
+    "Data Analyst",
+    "Data Scientist",
+    "AI Engineer",
+]
+
+js_date_range = {
+    "daily": 1,
+    "weekly": 7,
+    "montly": 31
+}
+
+ld_date_range = {
+    "daily": "r86400",
+    "weekly": "r604800",
+    "montly": "r2592000"
+}
 
 app_logger = logging.getLogger(__name__)
 
-def upload_artifacts_to_hf():
-    """Beams local JSONL data and active log files to permanent HF Dataset storage"""
+def upload_to_hf():
+    """Sends local JSONL data and active log files to permanent HF Dataset storage"""
 
     token = os.environ.get("HF_TOKEN")
 
@@ -58,45 +79,33 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
 
     if date_range == "None" or date_range is None:
         date_range = None
+
     
     if run_type == 'scheduled':
-        # 🌟 Define all the jobs you want to track automatically every night!
-        DAILY_JOBS = [
-            "Data Analyst"
-        ]
 
-        s_target_location = 'Kuala Lumpur'
-        ld_date_range = "r86400"
-        js_date_range = 1
+        app_logger.info(f"⏰ Starting Scheduled web scraper run for {job} job listings. {timestamp}")
 
-        for job in DAILY_JOBS:
+        app_logger.info("🚀 Scraping jobs from Jobstreet")
+        js_scraper(job_type = job, location = target_location, date_range = js_date_range[date_range])
 
-            app_logger.info(f"⏰ Starting Scheduled web scraper run for {job} job listings. {timestamp}")
+        app_logger.info("🚀 Scraping jobs from Linkedin")
+        ld_scraper(job_type = job, location = target_location, date_range = ld_date_range[date_range])
 
-            app_logger.info("🚀 Scraping jobs from Jobstreet")
-            js_scraper(job_type = job, location = s_target_location, date_range = js_date_range)
-
-            app_logger.info("🚀 Scraping jobs from Linkedin")
-            ld_scraper(job_type = job, location = s_target_location, date_range = ld_date_range)
-
-            app_logger.info("🏁 All scraping tasks completed successfully.")
-            upload_artifacts_to_hf()
+        app_logger.info("🏁 All scraping tasks completed successfully.")
+        upload_to_hf()
     
     elif run_type == 'manual':
-        app_logger.info(date_range)
-        if date_range == 'daily':
-            ld_date_range = "r86400"
-            js_date_range = 1
+        app_logger.info(f"Manual run, searching for {date_range or "all"} listings.")
 
         app_logger.info(f"Starting web scraper run for {job_title} job listings. {timestamp}")
         app_logger.info("🚀 Scraping jobs from Jobstreet")
-        js_scraper(job_type = job_title, location = target_location, date_range = js_date_range)
+        js_scraper(job_type = job_title, location = target_location, date_range = js_date_range[date_range])
 
         app_logger.info("🚀 Scraping jobs from Linkedin")
-        ld_scraper(job_type = job_title, location = target_location, date_range = ld_date_range)
+        ld_scraper(job_type = job_title, location = target_location, date_range = ld_date_range[date_range])
 
         app_logger.info("🏁 All scraping tasks completed successfully.")
-        upload_artifacts_to_hf()
+        upload_to_hf()
 
     else:
         app_logger.warning('🛑 Undetermined run type task is unable to start!')
