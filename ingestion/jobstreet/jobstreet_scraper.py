@@ -193,7 +193,7 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
 
 
 
-def get_jobs(response, filename, seen_ids):
+def get_jobs(response, filename, seen_ids, job_type):
     """
     Scrape job listings from jobstreet and save them to a jsonl file
 
@@ -284,6 +284,7 @@ def get_jobs(response, filename, seen_ids):
         raw_record = {
             "job_id": str(job_id),
             "source": "JobStreet",
+            "search_term": job_type,
             "url": job_url,
             "collection_timestamp": datetime.utcnow().isoformat(),
             "job_title": title_el.text.strip() if title_el else "N/A",
@@ -370,7 +371,7 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
             filename = os.path.join(ABS_PATH, f"{current_time}.jsonl")
 
         # get total number of jobs on current page
-        num_jobs = get_jobs(response, filename, seen_ids)
+        num_jobs = get_jobs(response, filename, seen_ids, job_type)
 
         # add to final total
         total_collected += num_jobs

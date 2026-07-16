@@ -86,7 +86,7 @@ def get_jobs(response):
 
 
 
-def scraper(job_cards, filename, seen_ids):
+def scraper(job_cards, filename, seen_ids, job_type):
     """
     Scrape job listings from jobstreet and save them to a jsonl file
 
@@ -180,14 +180,15 @@ def scraper(job_cards, filename, seen_ids):
         skills_found = []
         for skill in SKILLS:
             pattern = rf"\b{re.escape(skill)}\b"
-            
+
             if re.search(pattern, full_desc, re.IGNORECASE):
                 skills_found.append(skill)
 
         # format data to json
         raw_record = {
-            "job_id": job_id,
+            "job_id": str(job_id),
             "source": "LinkedIn",
+            "search_term": job_type,
             "url": job_url,
             "collection_timestamp": datetime.utcnow().isoformat(),
             "job_title": title_el.text.strip() if title_el else "N/A",
@@ -300,7 +301,7 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
             break
 
         # get total number of jobs on current page
-        num_jobs = scraper(job_cards, filename, seen_ids)
+        num_jobs = scraper(job_cards, filename, seen_ids, job_type)
 
         # add to final total
         total_collected += num_jobs
