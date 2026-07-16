@@ -23,6 +23,38 @@ BASE_URL = f"https://my.jobstreet.com/data-analyst-jobs/in-Kuala-Lumpur"
 # create relative path for linkedin scraped data
 ABS_PATH = os.path.join("data", "raw", "jobstreet")
 
+# skills to look for on job listings
+SKILLS = [
+    "SQL",
+    "Python",
+    "Java",
+    "Scala",
+    "PostgreSQL",
+    "Oracle",
+    "SQL Server",
+    "Spark",
+    "PySpark",
+    "Kafka",
+    "Hadoop",
+    "Hive",
+    "Databricks",
+    "AWS",
+    "Azure",
+    "GCP",
+    "Snowflake",
+    "Airflow",
+    "dbt",
+    "Docker",
+    "Kubernetes",
+    "Git",
+    "Data Warehouse",
+    "Data Modeling",
+    "Machine Learning",
+    "Power BI",
+    "Tableau",
+    "Excel"
+]
+
 # create directories if they don't exist
 os.makedirs(ABS_PATH, exist_ok=True)
 
@@ -240,7 +272,14 @@ def get_jobs(response, filename, seen_ids):
             js_logger.info(f"❌ Skipped ID {job_id}: Detail page unreachable.")
             num_jobs -= 1
             continue
-
+        
+        skills_found = []
+        for skill in SKILLS:
+            pattern = rf"\b{re.escape(skill)}\b"
+            
+            if re.search(pattern, full_desc, re.IGNORECASE):
+                skills_found.append(skill)
+        
         # format data to json
         raw_record = {
             "job_id": str(job_id),
@@ -257,7 +296,7 @@ def get_jobs(response, filename, seen_ids):
             "posting_date": posted_el.text.strip() if posted_el else "N/A",
             "job_description": full_desc,
             "requirements": "", 
-            "skills": [s for s in ["SQL", "Python", "Tableau", "Power BI", "Excel", "Spark"] if s.lower() in full_desc.lower()],
+            "skills": skills_found,
             # Save the full literal HTML block of the description for historical backup
             "raw_html": str(desc_el) if desc_el else ""
         }

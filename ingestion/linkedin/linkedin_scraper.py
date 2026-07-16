@@ -25,6 +25,38 @@ os.makedirs(ABS_PATH, exist_ok=True)
 # linkedin api has 10 jobs per page
 PAGE_SIZE = 10
 
+# skills to look for on job listings
+SKILLS = [
+    "SQL",
+    "Python",
+    "Java",
+    "Scala",
+    "PostgreSQL",
+    "Oracle",
+    "SQL Server",
+    "Spark",
+    "PySpark",
+    "Kafka",
+    "Hadoop",
+    "Hive",
+    "Databricks",
+    "AWS",
+    "Azure",
+    "GCP",
+    "Snowflake",
+    "Airflow",
+    "dbt",
+    "Docker",
+    "Kubernetes",
+    "Git",
+    "Data Warehouse",
+    "Data Modeling",
+    "Machine Learning",
+    "Power BI",
+    "Tableau",
+    "Excel"
+]
+
 # scraping timeline, if None then scrape all job listings
 daily,weekly,monthly = "r86400","r604800","r2592000"
 
@@ -145,6 +177,13 @@ def scraper(job_cards, filename, seen_ids):
             if "Job function" in item.text:
                 department_el = item.text.replace("Job function", "").strip()
 
+        skills_found = []
+        for skill in SKILLS:
+            pattern = rf"\b{re.escape(skill)}\b"
+            
+            if re.search(pattern, full_desc, re.IGNORECASE):
+                skills_found.append(skill)
+
         # format data to json
         raw_record = {
             "job_id": job_id,
@@ -161,7 +200,7 @@ def scraper(job_cards, filename, seen_ids):
             "posting_date": date_el["datetime"] if date_el and date_el.has_attr("datetime") else (date_el.text.strip() if date_el else "N/A"),
             "job_description": full_desc,
             "requirements": "", 
-            "skills": [s for s in ["SQL", "Python", "Tableau", "Power BI", "Excel", "Spark"] if s.lower() in full_desc.lower()],
+            "skills": skills_found,
             # Save the full literal HTML block of the description for historical backup
             "raw_html": str(desc_el) if desc_el else ""
         }
