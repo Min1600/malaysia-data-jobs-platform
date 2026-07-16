@@ -8,9 +8,10 @@ import requests
 import pandas as pd
 from datetime import datetime
 from huggingface_hub import hf_hub_download
-from run import job_scraper
+from run import job_scraper, SEARCH_TERMS
 from apscheduler.schedulers.background import BackgroundScheduler
 from logging.handlers import TimedRotatingFileHandler
+from zoneinfo import ZoneInfo
 
 
 HF_TOKEN = os.environ.get("HF_TOKEN")
@@ -30,8 +31,9 @@ def initialize_global_logging():
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
 
-    # File Handler
+    # File Handler Setup
     os.makedirs("logs", exist_ok=True)
+    
     file_handler = TimedRotatingFileHandler(
         filename=os.path.join("logs", "job-scraper.log"),
         when="midnight",
@@ -39,6 +41,21 @@ def initialize_global_logging():
         backupCount=30,  # Keeps 30 days of archives
         utc=True         # Syncs perfectly with Hugging Face UTC server clock
     )
+    
+    file_handler.suffix = "%Y-%m-%d(%H:%M).log"
+    
+    # Custom namer function to rewrite the filename
+    def custom_namer(default_name):
+        # default_name looks like: "logs/job-scraper.log.2026-07-16.log"
+        # We rewrite it to look like: "logs/job-scraper-2026-07-16.log"
+        base_dir = os.path.dirname(default_name)
+        file_part = os.path.basename(default_name)
+        
+        fixed_part = file_part.replace(".log.", "-")
+        return os.path.join(base_dir, fixed_part)
+        
+    file_handler.namer = custom_namer
+
     file_handler.setLevel(logging.INFO) 
     file_formatter = logging.Formatter('%(asctime)s:%(name)s - [%(levelname)s]: %(message)s')
     file_handler.setFormatter(file_formatter)
@@ -49,11 +66,12 @@ def initialize_global_logging():
     console_formatter = logging.Formatter('[%(levelname)s]: %(message)s')
     console_handler.setFormatter(console_formatter)
 
-    # Attach both
+    # Attach handlers
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
     
     return "Logging successfully initialized"
+
 
 initialize_global_logging()
 main_logger = logging.getLogger(__name__)
@@ -64,23 +82,31 @@ main_logger.info("Application UI successfully booted up!")
 # 2. AUTOMATED CRON SCHEDULER (Runs ONCE)
 # ==========================================
 def daily_scraper():
-    # 🌟 Make sure this matches your function name from run.py (job_scraper)
-    job_scraper(
-        job_title="Data Analyst",
-        target_location="Kuala Lumpur",
-        date_range="daily",
-        run_type="scheduled"
-    )
+    
+    for job in SEARCH_TERMS:
+        job_scraper(
+            job_title=job,
+            target_location="Kuala Lumpur",
+            date_range="daily",
+            run_type="scheduled"
+        )
 
 @st.cache_resource
 def initialize_global_scheduler():
-    scheduler = BackgroundScheduler()
+
+    scheduler = BackgroundScheduler(timezone="Asia/Kuala_Lumpur")
     
-    # Runs every single night at 16:00 UTC (Midnight Malaysia Time)
-    scheduler.add_job(daily_scraper, 'cron', hour=16, minute=0)
+    # ⏰ Schedule the job directly at midnight (00:00) Malaysia Time!
+    scheduler.add_job(
+        daily_scraper, 
+        'cron', 
+        hour=0, 
+        minute=0
+    )
+
     scheduler.start()
-    
-    main_logger.info("🚀 [SINGLETON]: Scheduler successfully armed for midnight runs.")
+    main_logger.info("🚀 [SINGLETON]: Scheduler successfully armed for midnight (00:00) Malaysia Time.")
+
     return scheduler
 
 # 2. Call it cleanly in your app. Streamlit handles the safety checks behind the scenes!
@@ -93,12 +119,13 @@ global_scheduler = initialize_global_scheduler()
 
 
 def fetch_data(website):
-    current_time = datetime.now().strftime('%d-%m-%Y')
+    kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
+    current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
     try:
         # 1. Pull the specific data vault file down from your private dataset
         local_file_path = hf_hub_download(
             repo_id="Amin1600/Web_Scraper_Data",
-            filename=f"job_data/raw/{website}/13-07-2026.jsonl",
+            filename=f"job_data/raw/{website}/{current_time}.jsonl",
             repo_type="dataset",
             token=HF_TOKEN
         )
@@ -133,7 +160,7 @@ date_input = st.sidebar.selectbox(
 
 backend_date_range = None if date_input == 'all' else date_input
 
-# The Activation Button
+# The Activation Button for scraper
 if st.sidebar.button("🚀 Run Scraper"):
     # Create a separate background thread so the UI doesn't freeze!
     scraper_thread = threading.Thread(
