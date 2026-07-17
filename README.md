@@ -4,7 +4,7 @@ emoji: 📊
 colorFrom: green
 colorTo: yellow
 sdk: streamlit
-app_file: app.py
+app_file: main.py
 python_version: 3.12
 pinned: false
 short_description: Analytics of job market
