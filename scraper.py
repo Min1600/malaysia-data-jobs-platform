@@ -88,10 +88,10 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
         app_logger.info(f"⏰ Starting Scheduled web scraper run for {job_title} job listings. {timestamp}")
 
         app_logger.info("🚀 Scraping jobs from Jobstreet")
-        js_scraper(job_type = job, location = target_location, date_range = js_date_range[date_range])
+        js_scraper(job_type = job_title, location = target_location, date_range = js_date_range[date_range])
 
         app_logger.info("🚀 Scraping jobs from Linkedin")
-        ld_scraper(job_type = job, location = target_location, date_range = ld_date_range[date_range])
+        ld_scraper(job_type = job_title, location = target_location, date_range = ld_date_range[date_range])
 
         app_logger.info("🏁 All scraping tasks completed successfully.")
         upload_to_hf()
