@@ -42,7 +42,7 @@ def initialize_global_logging():
         utc=True         # Syncs perfectly with Hugging Face UTC server clock
     )
     
-    file_handler.suffix = "%d-%m-%Y(%H:%M).log"
+    file_handler.suffix = "%Y-%m-%d(%H:%M).log"
     
     # Custom namer function to rewrite the filename
     def custom_namer(default_name):
