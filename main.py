@@ -11,6 +11,9 @@ from zoneinfo import ZoneInfo
 from scraper import job_scraper
 import numpy as np
 
+# Create the recommended random number generator
+rng = np.random.default_rng(seed=42) 
+st.write(rng)
 HF_TOKEN = os.environ.get("HF_TOKEN")
 
 # ==========================================
@@ -49,9 +52,9 @@ def fetch_data(website, current_time):
 
 st.write("Today's scraped data")
 st.header("Linkedin Data")
-st.write(fetch_data('linkedin'))
+st.write(fetch_data('linkedin',current_time))
 st.header("Jobstreet Data")
-st.write(fetch_data('jobstreet'))
+st.write(fetch_data('jobstreet',current_time))
 
 st.sidebar.header("⚙️ Live Scraper Controller")
 st.sidebar.write("Serch for job postings of your choice!")
