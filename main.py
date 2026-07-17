@@ -63,44 +63,8 @@ initialize_global_logging()
 main_logger = logging.getLogger(__name__)
 main_logger.info("Application UI successfully booted up!")
 
-
 # ==========================================
-# 2. AUTOMATED CRON SCHEDULER (Runs ONCE)
-# ==========================================
-def daily_scraper():
-    
-    for job in SEARCH_TERMS:
-        job_scraper(
-            job_title=job,
-            target_location="Kuala Lumpur",
-            date_range="daily",
-            run_type="scheduled"
-        )
-
-@st.cache_resource
-def initialize_global_scheduler():
-
-    scheduler = BackgroundScheduler(timezone="Asia/Kuala_Lumpur")
-    
-    # ⏰ Schedule the job directly at midnight (00:00) Malaysia Time!
-    scheduler.add_job(
-        daily_scraper, 
-        'cron', 
-        hour=0, 
-        minute=0
-    )
-
-    scheduler.start()
-    main_logger.info("🚀 [SINGLETON]: Scheduler successfully armed for midnight (00:00) Malaysia Time.")
-
-    return scheduler
-
-# 2. Call it cleanly in your app. Streamlit handles the safety checks behind the scenes!
-global_scheduler = initialize_global_scheduler()
-
-
-# ==========================================
-# 3. STREAMLIT USER INTERFACE & BUTTONS
+# 2. STREAMLIT USER INTERFACE & BUTTONS
 # ==========================================
 
 
