@@ -109,7 +109,6 @@ def test_connection(proxy_pool, url, params):
 
     for i, proxy in enumerate(proxy_pool):
         try:
-            js_logger.debug(f"🔄 Trying request using Proxy #{i+1}...")
             
             response = requests.get(
                 url, 
@@ -120,7 +119,7 @@ def test_connection(proxy_pool, url, params):
                 timeout = 10)
             response.raise_for_status()
 
-            js_logger.info(f"Proxy #{i+1} is successful!")
+            js_logger.debug(f"Proxy #{i+1} is successful!")
             
             return response # 🎉 Success! Return the response and exit the proxy loop
 
@@ -245,16 +244,9 @@ def get_jobs(response, filename, seen_ids, job_type):
         
         # removes repeated jobs by adding to set() data type
         seen_ids.add(job_id)
-
-        """
-        # Extract meta elements from card layout
-        company_el = card.find("a", attrs={"data-automation": "jobCompany"})
-        location_el = card.find("a", attrs={"data-automation": "jobLocation"})
-        salary_el = card.find("span", attrs={"data-automation": "jobSalary"})
-        """
         
         # Call Detail Page for full Job Description
-        js_logger.info("Calling job detail page for full job description.")
+        js_logger.debug("Requesting job detail page for full job description.")
         detail_res = test_connection(PROXY_POOL, job_url, params=None)
         full_desc = ""
         desc_el = None
