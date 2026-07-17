@@ -9,7 +9,11 @@ from datetime import datetime
 from huggingface_hub import hf_hub_download
 from zoneinfo import ZoneInfo
 from scraper import job_scraper
+import numpy as np
 
+# Create the recommended random number generator
+rng = np.random.default_rng(seed=42) 
+st.write(rng)
 HF_TOKEN = os.environ.get("HF_TOKEN")
 
 # ==========================================
@@ -17,6 +21,10 @@ HF_TOKEN = os.environ.get("HF_TOKEN")
 # ==========================================
 main_logger = logging.getLogger(__name__)
 
+kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
+current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
+
+@st.cache_data
 def fetch_data(website):
     kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
     current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
