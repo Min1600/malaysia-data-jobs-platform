@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import logging
 import threading
 import time
 import requests
@@ -14,7 +15,7 @@ HF_TOKEN = os.environ.get("HF_TOKEN")
 # ==========================================
 # STREAMLIT USER INTERFACE & BUTTONS
 # ==========================================
-
+main_logger = logging.getLogger(__name__)
 
 def fetch_data(website):
     kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
