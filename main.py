@@ -59,27 +59,38 @@ st.write(fetch_data('jobstreet',current_time))
 st.sidebar.header("⚙️ Live Scraper Controller")
 st.sidebar.write("Serch for job postings of your choice!")
 
-# UI Input fields
-job_input = st.sidebar.text_input("Job Title Keyword", "Data Analyst")
-loc_input = st.sidebar.text_input("Target Location", "Kuala Lumpur")
-date_input = st.sidebar.selectbox(
-    "Date Range Filter", 
-    options=["all", "daily", "weekly", "monthly"]
-)
-
-backend_date_range = None if date_input == 'all' else date_input
-
-# The Activation Button for scraper
-if st.sidebar.button("🚀 Run Scraper"):
-    # Create a separate background thread so the UI doesn't freeze!
-    scraper_thread = threading.Thread(
-        target=job_scraper,
-        kwargs={
-            "job_title": job_input,
-            "target_location": loc_input,
-            "date_range": backend_date_range,
-            "run_type": "manual"
-        }
+with st.sidebar.form("manual scraper form"):
+    job_input = st.text_input("Job Title Keyword", "Data Analyst")
+    loc_input = st.text_input("Target Location", "Kuala Lumpur")
+    date_input = st.selectbox(
+        "Date Range Filter", 
+        options=["all", "daily", "weekly", "monthly"]
     )
-    scraper_thread.start()
-    st.sidebar.success("🛰️ Scraper launched in background thread!")
+
+    backend_date_range = None if date_input == 'all' else date_input
+
+    # The Activation Button for scraper
+    if st.form_submit_button("🚀 Run Scraper"):
+        with st.status("🛰️ Initializing Scraping Engines...", expanded=True) as status:
+            try:
+                status.write("🕵️ Fetching proxies and connecting to job boards...")
+                
+                # Run the scraper synchronously inside the status block
+                job_scraper(
+                    job_title=job_input,
+                    target_location=loc_input,
+                    date_range=backend_date_range,
+                    run_type="manual"
+                )
+                
+                status.write("📦 Packing raw listings and pushing data to Hugging Face...")
+                status.update(label="🎉 Manual Scrape Completed Successfully!", state="complete", expanded=False)
+                st.success("Data updated! Refreshing view...")
+                
+                # Force Streamlit to clear data cache and read the brand new file!
+                st.cache_data.clear()
+                st.rerun()
+
+            except Exception as e:
+                status.update(label="❌ Scraper pipeline encountered an error", state="error")
+                st.error(f"Execution failed: {e}")
