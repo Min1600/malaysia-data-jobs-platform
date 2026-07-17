@@ -440,9 +440,3 @@ def js_scraper(job_type, date_range = None, location = "Kuala Lumpur"):
         js_logger.info(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings in {location} from jobstreet, posted within the {freq_type}")
     else:
         js_logger.warning('Error, input needs to be 1,7,31 or None')
-
-if __name__ == "__main__":
-    #js_scraper("Data Analyst", 1, "Kuala Lumpur")
-    PROXY_IP_LIST = [os.environ.get(f"PROXY_IP_{i}") for i in range(1, 11)]
-    PROXY_PORT_LIST = [os.environ.get(f"PROXY_PORT_{i}") for i in range(1, 11)]
-    print(PROXY_IP_LIST)
