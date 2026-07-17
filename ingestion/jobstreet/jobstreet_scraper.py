@@ -63,15 +63,24 @@ daily, weekly, monthly = 1,7,31
 
 js_logger = logging.getLogger(__name__)
 
-# 🔒 Fetch credentials safely from hidden environment memory
-PROXY_IP_LIST = [os.environ.get(f"PROXY_IP_{i}") for i in range(1, 11)]
-PROXY_PORT_LIST = [os.environ.get(f"PROXY_PORT_{i}") for i in range(1, 11)]
+# Check if the pooled JSON secret exists (GitHub Actions environment)
+proxy_config_env = os.environ.get("PROXY_CONFIG")
 
-PROXY_USER = os.environ.get("PROXY_USER") 
-PROXY_PASS = os.environ.get("PROXY_PASS")
+if proxy_config_env:
+    # Running in GitHub Cloud: parse the JSON string directly
+    config = json.loads(proxy_config_env)
+    PROXY_USER = config.get("PROXY_USER")
+    PROXY_PASS = config.get("PROXY_PASS")
+    PROXY_IP_LIST = config.get("IP_LIST", [])
+    PROXY_PORT_LIST = config.get("PORT_LIST", [])
+else:
+    # Running locally: read from individual .env lines
+    PROXY_USER = os.environ.get("PROXY_USER")
+    PROXY_PASS = os.environ.get("PROXY_PASS")
+    PROXY_IP_LIST = [os.environ.get(f"PROXY_IP_{i}") for i in range(1, 11)]
+    PROXY_PORT_LIST = [os.environ.get(f"PROXY_PORT_{i}") for i in range(1, 11)]
 
 PROXY_POOL = []
-
 # Only build the dict if the secrets exist, preventing crashes
 if all([PROXY_USER, PROXY_PASS]) and len(PROXY_IP_LIST) == len(PROXY_PORT_LIST):
     for ip, port in zip(PROXY_IP_LIST, PROXY_PORT_LIST):
@@ -431,3 +440,9 @@ def js_scraper(job_type, date_range = None, location = "Kuala Lumpur"):
         js_logger.info(f"✨ Full run complete. Successfully saved {total_collected} {job_type} job listings in {location} from jobstreet, posted within the {freq_type}")
     else:
         js_logger.warning('Error, input needs to be 1,7,31 or None')
+
+if __name__ == "__main__":
+    #js_scraper("Data Analyst", 1, "Kuala Lumpur")
+    PROXY_IP_LIST = [os.environ.get(f"PROXY_IP_{i}") for i in range(1, 11)]
+    PROXY_PORT_LIST = [os.environ.get(f"PROXY_PORT_{i}") for i in range(1, 11)]
+    print(PROXY_IP_LIST)

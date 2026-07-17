@@ -33,4 +33,5 @@ jobs:
       env:
         HF_TOKEN: ${{ secrets.HF_TOKEN }}
         REPO_TARGET: ${{ secrets.REPO_TARGET }}
+        PROXY_CONFIG: ${{ secrets.PROXY_CONFIG }}
       run: python run_scraper.py
