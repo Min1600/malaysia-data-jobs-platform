@@ -125,7 +125,7 @@ def fetch_data(website):
         # 1. Pull the specific data vault file down from your private dataset
         local_file_path = hf_hub_download(
             repo_id="Amin1600/Web_Scraper_Data",
-            filename=f"job_data/raw/{website}/17-07-2026.jsonl",
+            filename=f"job_data/raw/{website}/{current_time}.jsonl",
             repo_type="dataset",
             token=HF_TOKEN
         )
@@ -134,8 +134,10 @@ def fetch_data(website):
         df = pd.read_json(local_file_path, lines=True)
         main_logger.info(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
 
-        selected_columns = ["job_title", "company", "salary_min", "posting_date", "industry", "skills", "employment_type"]
-        return df[selected_columns]
+        target_columns = ["job_title", "company", "salary_min", "posting_date", "industry", "skills", "employment_type"]
+        existing_columns = [col for col in target_columns if col in df.columns]
+        
+        return df[existing_columns]
 
     except Exception as e:
         main_logger.warning(f"❌ Error downloading database: {e}")
