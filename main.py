@@ -25,7 +25,7 @@ kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
 current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
 
 @st.cache_data
-def fetch_data(website):
+def fetch_data(website, current_time):
     kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
     current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
     try:
