@@ -2,7 +2,7 @@
 title: Job Tracker 
 emoji: 📊
 colorFrom: green
-colorTo: green
+colorTo: yellow
 sdk: streamlit
 app_file: main.py
 python_version: 3.12
