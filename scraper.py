@@ -82,6 +82,8 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
 
     
     if run_type == 'scheduled':
+        
+        app_logger.info("🚀 Scheduler successfully armed for midnight (00:00) Malaysia Time.")
 
         app_logger.info(f"⏰ Starting Scheduled web scraper run for {job_title} job listings. {timestamp}")
 
