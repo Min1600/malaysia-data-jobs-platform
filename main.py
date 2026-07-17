@@ -12,7 +12,7 @@ from scraper import job_scraper
 import numpy as np
 
 # Create the recommended random number generator
-rng = np.random.default_rng(seed=42) 
+rng = np.random.rand()
 st.write(rng)
 HF_TOKEN = os.environ.get("HF_TOKEN")
 
