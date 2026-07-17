@@ -33,7 +33,7 @@ def fetch_data(website):
         df = pd.read_json(local_file_path, lines=True)
         main_logger.info(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
 
-        target_columns = ["job_title", "company", "salary_min", "posting_date", "industry", "skills", "employment_type"]
+        target_columns = ["job_title", "company", "url", "posting_date", "industry", "skills"]
         existing_columns = [col for col in target_columns if col in df.columns]
         
         return df[existing_columns]
