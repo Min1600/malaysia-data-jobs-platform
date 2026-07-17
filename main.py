@@ -8,9 +8,6 @@ import requests
 import pandas as pd
 from datetime import datetime
 from huggingface_hub import hf_hub_download
-from run import job_scraper, SEARCH_TERMS
-from apscheduler.schedulers.background import BackgroundScheduler
-from logging.handlers import TimedRotatingFileHandler
 from zoneinfo import ZoneInfo
 
 
@@ -33,28 +30,17 @@ def initialize_global_logging():
 
     # File Handler Setup
     os.makedirs("logs", exist_ok=True)
-    
-    file_handler = TimedRotatingFileHandler(
-        filename=os.path.join("logs", "job-scraper.log"),
-        when="midnight",
-        interval=1,
-        backupCount=30,  # Keeps 30 days of archives
-        utc=True         # Syncs perfectly with Hugging Face UTC server clock
+
+    # Convert the current clock time into an actual string representation
+    kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
+    date_str = datetime.now(kl_timezone).strftime('%d-%m-%Y(%H-%M)')
+
+    file_handler = logging.FileHandler(
+        filename=os.path.join("logs", f"{date_str}-job-scraper.log"),
+        mode='a', # append to file
+        encoding='utf-8'
     )
-    
-    file_handler.suffix = "%Y-%m-%d(%H:%M).log"
-    
-    # Custom namer function to rewrite the filename
-    def custom_namer(default_name):
-        # default_name looks like: "logs/job-scraper.log.2026-07-16.log"
-        # We rewrite it to look like: "logs/job-scraper-2026-07-16.log"
-        base_dir = os.path.dirname(default_name)
-        file_part = os.path.basename(default_name)
-        
-        fixed_part = file_part.replace(".log.", "-")
-        return os.path.join(base_dir, fixed_part)
-        
-    file_handler.namer = custom_namer
+
 
     file_handler.setLevel(logging.INFO) 
     file_formatter = logging.Formatter('%(asctime)s:%(name)s - [%(levelname)s]: %(message)s')
