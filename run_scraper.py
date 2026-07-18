@@ -21,7 +21,7 @@ os.makedirs("logs", exist_ok=True)
 
 # Convert the current clock time into an actual string representation
 kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
-date_str = datetime.now(kl_timezone).strftime('%d-%m-%Y(%H-%M)')
+date_str = datetime.now(kl_timezone).strftime('%d-%m-%Y(%H:%M)')
 
 file_handler = logging.FileHandler(
     filename=os.path.join("logs", f"{date_str}-job-scraper.log"),
