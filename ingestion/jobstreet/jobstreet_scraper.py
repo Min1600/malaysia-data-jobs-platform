@@ -6,6 +6,7 @@ import time
 import logging
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
 from curl_cffi import requests
 
@@ -368,7 +369,9 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
         if date_range is None:
             filename = os.path.join(ABS_PATH, "historic.jsonl")
         else:
-            current_time = datetime.now().strftime('%d-%m-%Y')
+            kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
+            current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
+
             filename = os.path.join(ABS_PATH, f"{current_time}.jsonl")
 
         # get total number of jobs on current page

@@ -5,6 +5,7 @@ import time
 import logging
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import requests
 from bs4 import BeautifulSoup
 
@@ -293,7 +294,9 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
         if date_range is None:
             filename = os.path.join(ABS_PATH, "historic.jsonl")
         else:
-            current_time = datetime.now().strftime('%d-%m-%Y')
+            kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
+            current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
+
             filename = os.path.join(ABS_PATH, f"{current_time}.jsonl")
 
         # stop if the site returns nothing more
