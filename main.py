@@ -45,7 +45,7 @@ def fetch_data(website, current_time):
         main_logger.warning(f"❌ Error downloading database: {e}")
         return None
 
-def fetch_no_copies():
+def fetch_no_copies(website, current_time):
     
     try:
         # 1. Pull the specific data vault file down from your private dataset
@@ -75,7 +75,7 @@ st.write(fetch_data('linkedin',current_time))
 st.write(fetch_no_copies('linkedin',current_time))
 st.header("Jobstreet Data")
 st.write(fetch_data('jobstreet',current_time))
-#st.write(fetch_no_copies('jobstreet',current_time))
+st.write(fetch_no_copies('jobstreet',current_time))
 
 st.sidebar.header("⚙️ Live Scraper Controller")
 st.sidebar.write("Serch for job postings of your choice!")
