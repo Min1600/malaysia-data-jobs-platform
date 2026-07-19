@@ -72,7 +72,7 @@ def fetch_no_copies():
 st.write("Today's scraped data")
 st.header("Linkedin Data")
 st.write(fetch_data('linkedin',current_time))
-#st.write(fetch_no_copies('linkedin',current_time))
+st.write(fetch_no_copies('linkedin',current_time))
 st.header("Jobstreet Data")
 st.write(fetch_data('jobstreet',current_time))
 #st.write(fetch_no_copies('jobstreet',current_time))
