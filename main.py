@@ -42,8 +42,8 @@ def fetch_data(website, current_time):
 
         target_columns = ["job_title", "company", "url", "posting_date", "industry", "skills"]
         existing_columns = [col for col in target_columns if col in df.columns]
-        
-        return df[existing_columns]
+        number = df['job_title'].count()
+        return (df[existing_columns], number)
 
     except Exception as e:
         main_logger.warning(f"❌ Error downloading database: {e}")
