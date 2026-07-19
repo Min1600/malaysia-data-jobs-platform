@@ -41,8 +41,9 @@ def fetch_data(website, current_time):
         existing_columns = [col for col in target_columns if col in df.columns]
         check = ["job_title", "company"]
         new_df = df.drop_duplicates(subset=check)
-        #new_df[["job_title", "company","search_term"]]
-        return df[["job_title", "company","search_term"]]
+        new_df_len = len(new_df[["job_title", "company","search_term"]])
+        df_len = len(df[["job_title", "company","search_term"]])
+        return (new_df_len, df_len)
     except Exception as e:
         main_logger.warning(f"❌ Error downloading database: {e}")
         return None
