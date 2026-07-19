@@ -15,3 +15,6 @@ logs/
 
 # Ignore local environment secrets
 .env
+
+# SQL connection
+.vscode

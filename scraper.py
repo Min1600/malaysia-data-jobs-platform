@@ -13,12 +13,9 @@ from ingestion.linkedin.linkedin_scraper import ld_scraper
 
 SEARCH_TERMS = [
     "Data Engineer",
-    "Junior Data Engineer",
-    "Analytics Engineer",
-    "Data Warehouse Developer",
     "Data Analyst",
     "Data Scientist",
-    "AI Engineer",
+    "Machine Learning Engineer",
 ]
 
 js_date_range = {
