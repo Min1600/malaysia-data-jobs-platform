@@ -11,9 +11,6 @@ from zoneinfo import ZoneInfo
 from scraper import job_scraper
 import numpy as np
 
-# Create the recommended random number generator
-rng = np.random.rand()
-st.write(rng)
 HF_TOKEN = os.environ.get("HF_TOKEN")
 
 # ==========================================
@@ -44,7 +41,7 @@ def fetch_data(website, current_time):
         existing_columns = [col for col in target_columns if col in df.columns]
         check = ["job_title", "company"]
         new_df = df.drop_duplicates(subset=check)
-        return new_df["job_title","company","search_term"]
+        return new_df
     except Exception as e:
         main_logger.warning(f"❌ Error downloading database: {e}")
         return None
