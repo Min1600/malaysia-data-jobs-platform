@@ -292,12 +292,12 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
 
         # Save jobs with a timeline scraped on the same day into its own file
         if date_range is None:
-            filename = os.path.join(ABS_PATH, "historic.jsonl")
+            filename = os.path.join(ABS_PATH, "historic(linkedin).jsonl")
         else:
             kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
             current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
 
-            filename = os.path.join(ABS_PATH, f"{current_time}.jsonl")
+            filename = os.path.join(ABS_PATH, f"{current_time}(linkedin).jsonl")
 
         # stop if the site returns nothing more
         if len(job_cards) == 0:

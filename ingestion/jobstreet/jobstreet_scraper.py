@@ -367,12 +367,12 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
         
         # Save jobs with a timeline scraped on the same day into its own file
         if date_range is None:
-            filename = os.path.join(ABS_PATH, "historic.jsonl")
+            filename = os.path.join(ABS_PATH, "historic(jobstreet).jsonl")
         else:
             kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
             current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
 
-            filename = os.path.join(ABS_PATH, f"{current_time}.jsonl")
+            filename = os.path.join(ABS_PATH, f"{current_time}(jobstreet).jsonl")
 
         # get total number of jobs on current page
         num_jobs = get_jobs(response, filename, seen_ids, job_type)
