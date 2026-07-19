@@ -40,13 +40,11 @@ def fetch_data(website, current_time):
         target_columns = ["job_title", "company", "url", "posting_date", "industry", "skills"]
         existing_columns = [col for col in target_columns if col in df.columns]
         check = ["job_title", "company"]
-        new_df = df.drop_duplicates(subset=check)
-        new_df_len = len(new_df[["job_title", "company","search_term"]])
-        df_len = len(df[["job_title", "company","search_term"]])
         return df[["job_title", "company","search_term"]]
     except Exception as e:
         main_logger.warning(f"❌ Error downloading database: {e}")
         return None
+
 def fetch_no_copies():
     
     try:
@@ -74,10 +72,10 @@ def fetch_no_copies():
 st.write("Today's scraped data")
 st.header("Linkedin Data")
 st.write(fetch_data('linkedin',current_time))
-st.write(fetch_no_copies('linkedin',current_time))
+#st.write(fetch_no_copies('linkedin',current_time))
 st.header("Jobstreet Data")
 st.write(fetch_data('jobstreet',current_time))
-st.write(fetch_no_copies('jobstreet',current_time))
+#st.write(fetch_no_copies('jobstreet',current_time))
 
 st.sidebar.header("⚙️ Live Scraper Controller")
 st.sidebar.write("Serch for job postings of your choice!")
