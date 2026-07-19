@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 from huggingface_hub import HfApi
+from zoneinfo import ZoneInfo
 
 # Import modules
 from ingestion.jobstreet.jobstreet_scraper import js_scraper, get_total_pages
@@ -75,7 +76,8 @@ def upload_to_hf():
 
 def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_range="daily", run_type="scheduled"):
 
-    timestamp = datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
+    kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
+    timestamp = datetime.now(kl_timezone).strftime('%d-%m-%Y, %H:%M:%S')
 
     if date_range == "None" or date_range is None:
         date_range = None
@@ -83,7 +85,7 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
     
     if run_type == 'scheduled':
         
-        app_logger.info("🚀 Scheduler successfully armed for midnight (00:00) Malaysia Time.")
+        app_logger.info("🚀 Scheduler successfully armed for midnight Malaysia Time.")
 
         app_logger.info(f"⏰ Starting Scheduled web scraper run for {job_title} job listings. {timestamp}")
 
@@ -97,6 +99,7 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
         upload_to_hf()
     
     elif run_type == 'manual':
+        
         app_logger.info(f"Manual run, searching for {date_range or "all"} listings.")
 
         app_logger.info(f"Starting web scraper run for {job_title} job listings. {timestamp}")

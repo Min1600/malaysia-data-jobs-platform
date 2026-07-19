@@ -26,8 +26,7 @@ current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
 
 @st.cache_data
 def fetch_data(website, current_time):
-    kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
-    current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
+
     try:
         # 1. Pull the specific data vault file down from your private dataset
         local_file_path = hf_hub_download(
