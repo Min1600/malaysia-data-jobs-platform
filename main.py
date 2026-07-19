@@ -42,7 +42,7 @@ def fetch_data(website, current_time):
 
         target_columns = ["job_title", "company", "url", "posting_date", "industry", "skills"]
         existing_columns = [col for col in target_columns if col in df.columns]
-        number = df['job_title'].count()
+        number = df['job_title'].unique()
         return (df[existing_columns], number)
 
     except Exception as e:
