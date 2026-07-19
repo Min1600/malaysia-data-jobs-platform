@@ -42,7 +42,7 @@ def fetch_data(website, current_time):
         check = ["job_title", "company"]
         new_df = df.drop_duplicates(subset=check)
         #new_df[["job_title", "company","search_term"]]
-        return new_df[["job_title", "company","search_term"]]
+        return df["job_title", "company","search_term"]
     except Exception as e:
         main_logger.warning(f"❌ Error downloading database: {e}")
         return None
