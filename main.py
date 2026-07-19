@@ -42,8 +42,9 @@ def fetch_data(website, current_time):
 
         target_columns = ["job_title", "company", "url", "posting_date", "industry", "skills"]
         existing_columns = [col for col in target_columns if col in df.columns]
+        check = ["job_title", "company", "search_term"]
         number = df['job_title'].unique()
-        return (df[existing_columns], number)
+        return df[check]
 
     except Exception as e:
         main_logger.warning(f"❌ Error downloading database: {e}")
