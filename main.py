@@ -10,7 +10,7 @@ from huggingface_hub import hf_hub_download
 from zoneinfo import ZoneInfo
 from scraper import job_scraper
 import numpy as np
-
+import traceback
 HF_TOKEN = os.environ.get("HF_TOKEN")
 
 # ==========================================
