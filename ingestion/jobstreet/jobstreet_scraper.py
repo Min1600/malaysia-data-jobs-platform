@@ -199,7 +199,31 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
 
     return pages
 
+def get_date(response):
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # 1. Find the script tag containing window.SEEK_REDUX_DATA
+    script_tag = soup.find('script', text=re.compile(r'window\.SEEK_REDUX_DATA'))
+    
+    if not script_tag:
+        return None
+        
+    # 2. Extract the raw JSON string using regular expressions
+    # This matches everything between = { ... };
+    match = re.search(r'window\.SEEK_REDUX_DATA\s*=\s*(\{.*?\});', script_tag.string, re.DOTALL)
+    
+    if match:
+        json_str = match.group(1)
+        data = json.loads(json_str)
+        job_list = data.get("results", {}).get("results", {}).get("jobs", [])
 
+        for job in job_list:
+            raw_iso_date = job.get("listingDate")
+            clean_date = raw_iso_date.split("T")[0] if raw_iso_date else None
+            
+            return clean_date
+        
+    return None
 
 
 def get_jobs(response, filename, seen_ids, job_type):
@@ -263,8 +287,7 @@ def get_jobs(response, filename, seen_ids, job_type):
             department_el = detail_soup.find("span", attrs={"data-automation": "job-detail-classifications"})
             emp_el = detail_soup.find("span", attrs={"data-automation": "job-detail-work-type"})
             salary_el = detail_soup.find("span", attrs={"data-automation": "job-detail-salary"})
-            posted_el = detail_soup.find("span", string=re.compile("Posted"))
-
+            posted_el = get_date(response)
             # Extract Raw Description Text
             desc_el = detail_soup.find(attrs={"data-automation": "jobAdDetails"})
             full_desc = desc_el.text.strip() if desc_el else ""
@@ -296,7 +319,7 @@ def get_jobs(response, filename, seen_ids, job_type):
             "salary_min": salary_el.text.strip() if salary_el else "N/A",  
             "salary_max": salary_el.text.strip() if salary_el else "N/A",
             "department": department_el.text.strip() if department_el else "N/A",
-            "posting_date": posted_el.text.strip() if posted_el else "N/A",
+            "posting_date": posted_el if posted_el else "N/A",
             "job_description": full_desc,
             "requirements": "", 
             "skills": skills_found,
