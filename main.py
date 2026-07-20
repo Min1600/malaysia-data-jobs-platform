@@ -116,3 +116,4 @@ with st.sidebar.form("manual scraper form"):
             except Exception as e:
                 status.update(label="❌ Scraper pipeline encountered an error", state="error")
                 st.error(f"Execution failed: {e}")
+                st.code(traceback.format_exc(), language="python")
