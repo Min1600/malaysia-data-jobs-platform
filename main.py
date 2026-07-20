@@ -89,7 +89,7 @@ with st.sidebar.form("manual scraper form"):
         options=["all", "daily", "weekly", "monthly"]
     )
 
-    backend_date_range = "None" if date_input == 'all' else date_input
+    backend_date_range = None if date_input == 'all' else date_input
 
     # The Activation Button for scraper
     if st.form_submit_button("🚀 Run Scraper"):
@@ -101,7 +101,7 @@ with st.sidebar.form("manual scraper form"):
                 job_scraper(
                     job_title=job_input,
                     target_location=loc_input,
-                    date_range=backend_date_range,
+                    date_range=date_input,
                     run_type="manual"
                 )
                 

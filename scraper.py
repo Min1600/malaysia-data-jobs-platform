@@ -76,7 +76,7 @@ def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_r
     kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
     timestamp = datetime.now(kl_timezone).strftime('%d-%m-%Y, %H:%M:%S')
 
-    if date_range == "None" or date_range is None:
+    if date_range == "all" or date_range is None:
         date_range = None
 
     
