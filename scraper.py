@@ -71,7 +71,7 @@ def upload_to_hf():
         app_logger.error(f"❌ Failed to sync files to Hugging Face Dataset: {e}")
 
 
-def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_range="daily", run_type="scheduled"):
+def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_range=None, run_type="scheduled"):
 
     kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
     timestamp = datetime.now(kl_timezone).strftime('%d-%m-%Y, %H:%M:%S')
