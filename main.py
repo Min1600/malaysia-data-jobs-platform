@@ -23,29 +23,6 @@ current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
 
 #@st.cache_data
 def fetch_data(website, current_time):
-
-    try:
-        # 1. Pull the specific data vault file down from your private dataset
-        local_file_path = hf_hub_download(
-            repo_id="Amin1600/Web_Scraper_Data",
-            filename=f"job_data/raw/{website}/historic({website}).jsonl",
-            repo_type="dataset",
-            token=HF_TOKEN
-        )
-        
-        # 2. Read it directly into a Pandas DataFrame
-        df = pd.read_json(local_file_path, lines=True)
-        print(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
-
-        target_columns = ["job_title", "company", "url", "posting_date", "industry", "skills"]
-        existing_columns = [col for col in target_columns if col in df.columns]
-        return df
-
-    except Exception as e:
-        print(f"❌ Error downloading database: {e}")
-        return None
-
-def fetch_no_copies(website, current_time):
     
     try:
         # 1. Pull the specific data vault file down from your private dataset
@@ -64,7 +41,7 @@ def fetch_no_copies(website, current_time):
         existing_columns = [col for col in target_columns if col in df.columns]
         check = ["job_title", "company"]
         new_df = df.drop_duplicates(subset=check)
-        return new_df[["job_title", "company","search_term"]]
+        return new_df[existing_columns]
         
     except Exception as e:
         print(f"❌ Error downloading database: {e}")
@@ -73,10 +50,8 @@ def fetch_no_copies(website, current_time):
 st.write("Today's scraped data")
 st.header("Linkedin Data")
 st.write(fetch_data('linkedin',current_time))
-st.write(fetch_no_copies('linkedin',current_time))
 st.header("Jobstreet Data")
 st.write(fetch_data('jobstreet',current_time))
-st.write(fetch_no_copies('jobstreet',current_time))
 
 st.sidebar.header("⚙️ Live Scraper Controller")
 st.sidebar.write("Serch for job postings of your choice!")
@@ -114,4 +89,4 @@ with st.sidebar.form("manual scraper form"):
                 status.update(label="❌ Scraper pipeline encountered an error", state="error")
                 st.error(f"Execution failed: {e}")
                 st.code(traceback.format_exc(), language="python")
-                
+
