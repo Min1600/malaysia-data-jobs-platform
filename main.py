@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import datetime
 from huggingface_hub import hf_hub_download
 from zoneinfo import ZoneInfo
-from scraper import job_scraper
+from run_scraper import manual_scraper
 import numpy as np
 import traceback
 HF_TOKEN = os.environ.get("HF_TOKEN")
@@ -98,11 +98,10 @@ with st.sidebar.form("manual scraper form"):
                 status.write("🕵️ Fetching proxies and connecting to job boards...")
                 
                 # Run the scraper synchronously inside the status block
-                job_scraper(
+                manual_scraper(
                     job_title=job_input,
                     target_location=loc_input,
                     date_range=date_input,
-                    run_type="manual"
                 )
                 
                 status.write("📦 Packing raw listings and pushing data to Hugging Face...")
