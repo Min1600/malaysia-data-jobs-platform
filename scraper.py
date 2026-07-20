@@ -21,13 +21,15 @@ SEARCH_TERMS = [
 js_date_range = {
     "daily": 1,
     "weekly": 7,
-    "montly": 31
+    "montly": 31,
+    "None": None
 }
 
 ld_date_range = {
     "daily": "r86400",
     "weekly": "r604800",
-    "montly": "r2592000"
+    "montly": "r2592000",
+    "None": None
 }
 
 app_logger = logging.getLogger(__name__)
@@ -71,13 +73,13 @@ def upload_to_hf():
         app_logger.error(f"❌ Failed to sync files to Hugging Face Dataset: {e}")
 
 
-def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_range=None, run_type="scheduled"):
+def job_scraper(job_title="Data Analyst", target_location="Kuala Lumpur", date_range="None", run_type="scheduled"):
 
     kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
     timestamp = datetime.now(kl_timezone).strftime('%d-%m-%Y, %H:%M:%S')
 
     if date_range == "all" or date_range is None:
-        date_range = None
+        date_range = "None"
 
     
     if run_type == 'scheduled':
