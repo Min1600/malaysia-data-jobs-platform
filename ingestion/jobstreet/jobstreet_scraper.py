@@ -19,7 +19,7 @@ HEADERS = {
 }
 
 # url for website to be scraped and path to save ingested data into
-BASE_URL = f"https://my.jobstreet.com/data-analyst-jobs/in-Kuala-Lumpur"
+BASE_URL = f"https://my.jobstreet.com/jobs"
 
 # create relative path for linkedin scraped data
 ABS_PATH = os.path.join("data", "raw", "jobstreet")
@@ -164,7 +164,7 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
     js_logger.debug(f"Collecting number of pages of {job_type} job listings in {location} from jobstreet.")
 
     params = {
-    "keyword" : job_type,
+    "keywords" : job_type,
     "where" : location,
     "daterange": date_range,
     "page": 1
@@ -245,7 +245,7 @@ def get_jobs(response, filename, seen_ids, job_type):
     # locate all job listings on website page
     job_cards = soup.find_all("article", attrs={"data-automation": "normalJob"})
     num_jobs = len(job_cards)
-
+    js_logger.info(f"Found {num_jobs} jobs on this page")
     # iterate over all job listings found to get data from each one
     for card in job_cards:
 
@@ -376,7 +376,7 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
 
         # request specific page from jobstreet website
         params = {
-            "keyword" : job_type,
+            "keywords" : job_type,
             "where" : location,
             "daterange": date_range,
             "page": page_counter
