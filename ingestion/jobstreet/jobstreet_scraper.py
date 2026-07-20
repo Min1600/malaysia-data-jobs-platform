@@ -189,7 +189,7 @@ def get_total_pages(job_type, date_range = None, location = "Kuala Lumpur"):
 
     # convert to int type for calculation
     total_jobs = int(re.sub(r'[^\d]', '', total_jobs))
-
+    js_logger.info(f"Total number of jobs found: {total_jobs} for jobstreet listing of {job_type} in {location}")
     # calculate number of pages (jobstreet has 30 jobs per page)
     pages = math.ceil(int(total_jobs) / 30)
 
