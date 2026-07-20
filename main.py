@@ -35,14 +35,14 @@ def fetch_data(website, current_time):
         
         # 2. Read it directly into a Pandas DataFrame
         df = pd.read_json(local_file_path, lines=True)
-        main_logger.info(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
+        print(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
 
         target_columns = ["job_title", "company", "url", "posting_date", "industry", "skills"]
         existing_columns = [col for col in target_columns if col in df.columns]
         return df
 
     except Exception as e:
-        main_logger.warning(f"❌ Error downloading database: {e}")
+        print(f"❌ Error downloading database: {e}")
         return None
 
 def fetch_no_copies(website, current_time):
@@ -67,7 +67,7 @@ def fetch_no_copies(website, current_time):
         return new_df[["job_title", "company","search_term"]]
         
     except Exception as e:
-        main_logger.warning(f"❌ Error downloading database: {e}")
+        print(f"❌ Error downloading database: {e}")
         return None
 
 st.write("Today's scraped data")
