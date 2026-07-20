@@ -55,11 +55,11 @@ def daily_scraper():
 
 def manual_scraper(job_title, target_location, date_range):
     job_scraper(
-        job_title=job,
+        job_title=job_title,
         target_location=target_location,
         date_range=date_range,
         run_type="manual"
     )
-    
+
 if __name__ == "__main__":
     daily_scraper()

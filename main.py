@@ -89,8 +89,6 @@ with st.sidebar.form("manual scraper form"):
         options=["all", "daily", "weekly", "monthly"]
     )
 
-    backend_date_range = None if date_input == 'all' else date_input
-
     # The Activation Button for scraper
     if st.form_submit_button("🚀 Run Scraper"):
         with st.status("🛰️ Initializing Scraping Engines...", expanded=True) as status:
