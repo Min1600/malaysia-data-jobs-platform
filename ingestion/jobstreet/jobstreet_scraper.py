@@ -134,7 +134,7 @@ def test_connection(proxy_pool, url, params):
             status = e.response.status_code if e.response else "Unknown"
             reason = e.response.reason if e.response else str(e)
 
-            js_logger.error(f"🛑 HTTP Error: {status} - {reason}. Proxy #{i+1} failed, Retrying with the next available proxy...")
+            js_logger.debug(f"🛑 HTTP Error: {status} - {reason}. Proxy #{i+1} failed, Retrying with the next available proxy...")
             continue
         
         # Catches connection drops, timeouts, DNS issues where NO response was given
