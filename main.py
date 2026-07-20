@@ -39,8 +39,8 @@ def fetch_data(website, current_time):
 
         target_columns = ["job_title", "company", "url", "posting_date", "industry", "skills"]
         existing_columns = [col for col in target_columns if col in df.columns]
-        check = ["job_title", "company"]
-        return df[["job_title", "company","search_term"]]
+        return df
+
     except Exception as e:
         main_logger.warning(f"❌ Error downloading database: {e}")
         return None
@@ -51,7 +51,7 @@ def fetch_no_copies(website, current_time):
         # 1. Pull the specific data vault file down from your private dataset
         local_file_path = hf_hub_download(
             repo_id="Amin1600/Web_Scraper_Data",
-            filename=f"job_data/raw/{website}/{current_time}.jsonl",
+            filename=f"job_data/raw/{website}/{current_time}({website}).jsonl",
             repo_type="dataset",
             token=HF_TOKEN
         )
@@ -65,6 +65,7 @@ def fetch_no_copies(website, current_time):
         check = ["job_title", "company"]
         new_df = df.drop_duplicates(subset=check)
         return new_df[["job_title", "company","search_term"]]
+        
     except Exception as e:
         main_logger.warning(f"❌ Error downloading database: {e}")
         return None
