@@ -56,6 +56,8 @@ SKILLS = [
     "Excel"
 ]
 
+TIMEZONE = ZoneInfo("Asia/Kuala_Lumpur")
+
 # create directories if they don't exist
 os.makedirs(ABS_PATH, exist_ok=True)
 
@@ -311,7 +313,7 @@ def get_jobs(response, filename, seen_ids, job_type):
             "source": "JobStreet",
             "search_term": job_type,
             "url": job_url,
-            "collection_timestamp": datetime.utcnow().isoformat(),
+            "collection_timestamp": datetime.now(TIMEZONE).isoformat(),
             "job_title": title_el.text.strip() if title_el else "N/A",
             "company": company_el.text.strip() if company_el else "N/A",
             "location": location_el.text.strip() if location_el else "N/A",
@@ -392,8 +394,7 @@ def _run_scrape(job_type, date_range = None, location = "Kuala Lumpur"):
         if date_range is None:
             filename = os.path.join(ABS_PATH, "historic(jobstreet).jsonl")
         else:
-            kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
-            current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
+            current_time = datetime.now(TIMEZONE).strftime('%d-%m-%Y')
 
             filename = os.path.join(ABS_PATH, f"{current_time}(jobstreet).jsonl")
 

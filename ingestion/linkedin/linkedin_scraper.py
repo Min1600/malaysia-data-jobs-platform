@@ -58,6 +58,8 @@ SKILLS = [
     "Excel"
 ]
 
+TIMEZONE = ZoneInfo("Asia/Kuala_Lumpur")
+
 # scraping timeline, if None then scrape all job listings
 daily,weekly,monthly = "r86400","r604800","r2592000"
 
@@ -191,7 +193,7 @@ def scraper(job_cards, filename, seen_ids, job_type):
             "source": "LinkedIn",
             "search_term": job_type,
             "url": job_url,
-            "collection_timestamp": datetime.utcnow().isoformat(),
+            "collection_timestamp": datetime.now(TIMEZONE).isoformat(),
             "job_title": title_el.text.strip() if title_el else "N/A",
             "company": company_el.text.strip() if company_el else "N/A",
             "location": loc_el.text.strip() if loc_el else "N/A",
@@ -294,8 +296,7 @@ def _run_scrape(job_type, date_range = None, location = 'Kuala Lumpur', max_jobs
         if date_range is None:
             filename = os.path.join(ABS_PATH, "historic(linkedin).jsonl")
         else:
-            kl_timezone = ZoneInfo("Asia/Kuala_Lumpur")
-            current_time = datetime.now(kl_timezone).strftime('%d-%m-%Y')
+            current_time = datetime.now(TIMEZONE).strftime('%d-%m-%Y')
 
             filename = os.path.join(ABS_PATH, f"{current_time}(linkedin).jsonl")
 
