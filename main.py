@@ -37,7 +37,7 @@ def fetch_data(website, current_time):
         df = pd.read_json(local_file_path, lines=True)
         main_logger.info(f"📊 Successfully loaded {len(df)} jobs rows from {website} uploaded on {current_time}.")
 
-        target_columns = ["job_title", "company", "search_term", "posting_date", "industry", "skills","collection_timestamp"]
+        target_columns = ["job_title", "company", "url", "posting_date", "industry", "skills",]
         existing_columns = [col for col in target_columns if col in df.columns]
         check = ["job_title", "company"]
         new_df = df.drop_duplicates(subset=check)
