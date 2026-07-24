@@ -10,8 +10,8 @@ The pipeline currently focuses on roles such as Data Analyst, Data Engineer, Dat
 ## Architecture
 
 ### Data Sources
-- LinkedIn
-- Jobstreet
+- LinkedIn (https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search)
+- Jobstreet (https://my.jobstreet.com/jobs)
 ### Technology Stack
 - **Python**: Web scraping and pipeline orchestration
 - **PostgreSQL**: Data storage and SQL transformations
@@ -45,20 +45,20 @@ The Bronze data is transformed into a standardized Silver layer using SQL.
 
 Transformations include:
 
-Standardizing job titles
-Standardizing company names
-Standardizing locations
-Standardizing employment types
-Identifying potential duplicate jobs across different platforms
-Cleaning and validating data
+- Standardizing job titles
+- Standardizing company names
+- Standardizing locations
+- Standardizing employment types
+- Identifying potential duplicate jobs across different platforms
+- Cleaning and validating data
 
 Raw source values are retained where appropriate to maintain data lineage.
 
 ### 4. AI Enrichment
 Unstructured job descriptions are processed using a Groq-hosted LLM to extract structured information, including:
 
-Technical skills
-Job requirements
+- Technical skills
+- Job requirements
 
 Pydantic is used to validate the structured LLM output.
 
