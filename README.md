@@ -15,11 +15,12 @@ The pipeline currently focuses on roles such as Data Analyst, Data Engineer, Dat
 ### Technology Stack
 - **Python**: Web scraping and pipeline orchestration
 - **PostgreSQL**: Data storage and SQL transformations
-- **HuggingFace**: Raw data storage
+- **Hugging Face**: Raw data storage
 - **Streamlit**: Pipeline interface and monitoring
 - **GitHub Actions**: Scheduled pipeline execution
 - **Docker**: PostgreSQL containerization
 - **Groq LLM**: For enrichment of unstructured data
+- **Pydantic**: Validation of structured LLM outputs
 
 ### ETL Pipeline
 
@@ -32,9 +33,9 @@ The pipeline currently focuses on roles such as Data Analyst, Data Engineer, Dat
 ## Pipeline
 
 ### 1. Data Collection
-The raw data collected from LinkedIn and JobStreet are saved into jsonl files on Hugging Face dataset. This preserves the original scraped information for histoical references and downstream processing. 
+The raw data collected from LinkedIn and JobStreet are saved into jsonl files on Hugging Face dataset. This preserves the original scraped information for histoical reference and downstream processing. 
 
-This process is automated by a cron job run on GitHub Actions everyday at midnight to collect all the job postings from the last 24 hours.
+The data collection process is automated using GitHub Actions and runs daily at midnight. The scraper collects job postings published within the previous 24 hours.
 ### 2. Bronze Layer
 Raw job data is loaded into a PostgreSQL Bronze layer.
 
@@ -76,36 +77,7 @@ Potential analysis includes:
 
 ## Data Model
 
-## Technologies
-
 ## Project Structure
-
-## Data Quality & Deduplication
-The pipeline handles duplicate jobs at multiple stages.
-
-### Bronze-level duplicates
-
-Jobs are uniquely identified by:
-
-(source, job_id)
-
-This prevents the same listing from the same platform from being ingested multiple times.
-
-### Cross-source duplicates
-
-The same job may appear on multiple platforms with different IDs.
-
-For example:
-
-LinkedIn:
-Data Analyst | Company A | Kuala Lumpur
-
-JobStreet:
-Data Analyst | Company A | Kuala Lumpur
-
-These records are retained because they originate from different sources, but they can be flagged as potential cross-source duplicates during Silver-layer processing.
-
-This preserves source-level lineage while allowing downstream analysis to identify potentially duplicated real-world job postings.
 
 ## AI Enrichment
 Job descriptions are highly unstructured and inconsistent across job platforms. Important information such as technical skills and requirements may appear under different headings or may not be consistently extractable using traditional scraping techniques.
