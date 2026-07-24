@@ -1,5 +1,7 @@
 # Malaysia Data Jobs ETL Pipeline 
-This project demonstrates an ETL pipeline for collecting and processing data job listings in Kuala Lumpur, Malaysia using a Medallion Architecture.The pipeline collects job listings from online job platforms, preserves raw data, transforms and standardizes records, and enriches unstructured job descriptions using an LLM.
+This project demonstrates an ETL pipeline for collecting and processing data job listings in Kuala Lumpur, Malaysia using a Medallion Architecture.
+
+The pipeline collects job listings from online job platforms, preserves raw data, transforms and standardizes records, and enriches unstructured job descriptions using an LLM.
 
 The pipeline currently focuses on roles such as Data Analyst, Data Engineer, Data Scientist, and related positions.
 
