@@ -22,6 +22,9 @@ The pipeline currently focuses on roles such as Data Analyst, Data Engineer, Dat
 - **Groq LLM**: For enrichment of unstructured data
 - **Pydantic**: Validation of structured LLM outputs
 
+### Data Diagram
+![Alt Text](img)
+
 ### ETL Pipeline
 
 1. Job listings are scraped from online job platforms on a scheduled basis.
