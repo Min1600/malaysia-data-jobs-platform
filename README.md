@@ -1,10 +1,32 @@
-# Malaysia data jobs platform
+# Malaysia Data Jobs ETL Pipeline 
 
 ## Overview
+This project demonstrates an ETL pipeline for collecting and processing data job listings in Kuala Lumpur, Malaysia using a medallion architecture
+
+The pipeline collects listings from online job platforms, preserves raw data, transforms and standardizes records using SQL, and enriches unstructured job descriptions using an LLM.
+
+The pipeline currently focuses on roles such as Data Analyst, Data Engineer, Data Scientist, and related positions.
 
 ## Architecture
 
-## Data Sources
+### Data Sources
+    - LinkedIn
+    - Jobstreet
+### Technology Stack
+    - Python: Web scraping and pipeline orchestration
+    - PostgreSQL: Data storage and SQL transformations
+    - HuggingFace: Raw data storage
+    - Streamlit: Pipeline interface and monitoring
+    - GitHub Actions: Scheduled pipeline execution
+    - Docker: PostgreSQL containerization
+
+### ETL Pipeline
+
+1. Extract Job listings are scraped from online job platforms on a scheduled basis.
+2. Raw job data is loaded into a PostgreSQL Bronze layer as the single source of truth.
+3. The Bronze data is transformed into a standardized Silver layer using SQL.
+4. Unstructured job descriptions are processed using a Groq-hosted LLM to extract structured information
+5. The Gold layer is planned as the final analytics-ready layer of the pipeline.
 
 ## Pipeline
 
@@ -47,6 +69,7 @@ Data Analyst | Company A | Kuala Lumpur
 These records are retained because they originate from different sources, but they can be flagged as potential cross-source duplicates during Silver-layer processing.
 
 This preserves source-level lineage while allowing downstream analysis to identify potentially duplicated real-world job postings.
+
 ## AI Enrichment
 Job descriptions are highly unstructured and inconsistent across job platforms. Important information such as technical skills and requirements may appear under different headings or may not be consistently extractable using traditional scraping techniques.
 
