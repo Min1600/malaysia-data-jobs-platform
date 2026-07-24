@@ -10,15 +10,15 @@ The pipeline currently focuses on roles such as Data Analyst, Data Engineer, Dat
 ## Architecture
 
 ### Data Sources
-    - LinkedIn
+- LinkedIn
     - Jobstreet
 ### Technology Stack
-    - Python: Web scraping and pipeline orchestration
-    - PostgreSQL: Data storage and SQL transformations
-    - HuggingFace: Raw data storage
-    - Streamlit: Pipeline interface and monitoring
-    - GitHub Actions: Scheduled pipeline execution
-    - Docker: PostgreSQL containerization
+- Python: Web scraping and pipeline orchestration
+- PostgreSQL: Data storage and SQL transformations
+- HuggingFace: Raw data storage
+- Streamlit: Pipeline interface and monitoring
+- GitHub Actions: Scheduled pipeline execution
+- Docker: PostgreSQL containerization
 
 ### ETL Pipeline
 
