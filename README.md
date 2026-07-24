@@ -60,35 +60,26 @@ class JobRequirements(BaseModel):
 
 Example output:
 
+```python
 {
 
   "skills": [
-
     "SQL",
-
     "Python",
-
     "Power BI",
-
     "Tableau",
-
     "Excel"
-
   ],
 
   "requirements": [
-
     "0-1 year of experience in data analysis or a related field",
-
     "Foundational knowledge of SQL and Excel",
-
     "Strong communication skills",
-
     "Ability to prioritize and manage multiple tasks"
-
   ]
   
 }
+```
 
 The enrichment results are stored separately from the core Silver dataset and linked through job_key.
 
