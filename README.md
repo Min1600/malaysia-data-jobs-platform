@@ -11,7 +11,7 @@ The pipeline currently focuses on roles such as Data Analyst, Data Engineer, Dat
 
 ### Data Sources
 - LinkedIn
-    - Jobstreet
+- Jobstreet
 ### Technology Stack
 - Python: Web scraping and pipeline orchestration
 - PostgreSQL: Data storage and SQL transformations
