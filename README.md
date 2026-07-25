@@ -21,7 +21,7 @@ The pipeline currently focuses on roles such as Data Analyst, Data Engineer, Dat
 - **Pydantic**: Validation of structured LLM outputs
 
 ### Data Diagram
-![Data Flow Diagram using draw.io](img/ETL_data_jobs.drawio.png)
+![Data Flow Diagram using draw.io](img/ETL_data_jobs.png)
 
 ### ETL Pipeline
 
