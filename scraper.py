@@ -8,8 +8,8 @@ from huggingface_hub import HfApi
 from zoneinfo import ZoneInfo
 
 # Import modules
-from ingestion.jobstreet.jobstreet_scraper import js_scraper, get_total_pages
-from ingestion.linkedin.linkedin_scraper import ld_scraper
+from ingestion.jobstreet_scraper import js_scraper, get_total_pages
+from ingestion.linkedin_scraper import ld_scraper
 
 SEARCH_TERMS = [
     "Data Engineer",
