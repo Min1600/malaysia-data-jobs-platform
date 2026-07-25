@@ -77,9 +77,7 @@ Potential analysis includes:
 
 
 ## Data Model
-
-## Project Structure
-
+![Unfinished Gold layer image of ER Diagram / Star Schema](img)
 ## AI Enrichment
 Job descriptions are highly unstructured and inconsistent across job platforms. Important information such as technical skills and requirements may appear under different headings or may not be consistently extractable using traditional scraping techniques.
 
@@ -118,6 +116,13 @@ The enrichment results are stored separately from the core Silver dataset and li
 
 This allows the AI enrichment process to be incremental. Jobs that have already been enriched do not need to be sent to the LLM again, reducing unnecessary API usage and processing costs.
 
+## Project Structure
+
+## Setup & Installation
+TBD
+## Usage
+TBD
+
 ## Challenges and design decisions
 ### Why PostgreSQL?
 
@@ -134,6 +139,5 @@ Reprocessing previously enriched jobs would unnecessarily increase LLM API usage
 ### Why keep Bronze data?
 
 Raw data is preserved to maintain historical lineage and allow transformations to be revised without recollecting the source data.
-## Running the Project
 
 ## Future Improvements
