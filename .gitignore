@@ -5,10 +5,6 @@
 __pycache__/
 *.pyc
 
-# Ignore local scraped data (Stored on Hugging Face instead)
-data/
-*.jsonl
-
 # Ignore local application logs (Stored on Hugging Face instead)
 logs/
 *.log
