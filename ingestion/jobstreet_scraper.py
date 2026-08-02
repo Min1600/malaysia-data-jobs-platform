@@ -278,21 +278,22 @@ def get_jobs(response, filename, seen_ids, job_type):
         full_desc = ""
         desc_el = None
         
-        if detail_res.status_code == 200:
+        if detail_res:
+            if detail_res.status_code == 200:
 
-            # get job description/details
-            detail_soup = BeautifulSoup(detail_res.text, "html.parser")
+                # get job description/details
+                detail_soup = BeautifulSoup(detail_res.text, "html.parser")
 
-            # Extract meta elements from details page
-            company_el = detail_soup.find("span", attrs={"data-automation": "advertiser-name"})
-            location_el = detail_soup.find("span", attrs={"data-automation": "job-detail-location"})
-            department_el = detail_soup.find("span", attrs={"data-automation": "job-detail-classifications"})
-            emp_el = detail_soup.find("span", attrs={"data-automation": "job-detail-work-type"})
-            salary_el = detail_soup.find("span", attrs={"data-automation": "job-detail-salary"})
-            posted_el = get_date(response)
-            # Extract Raw Description Text
-            desc_el = detail_soup.find(attrs={"data-automation": "jobAdDetails"})
-            full_desc = desc_el.text.strip() if desc_el else ""
+                # Extract meta elements from details page
+                company_el = detail_soup.find("span", attrs={"data-automation": "advertiser-name"})
+                location_el = detail_soup.find("span", attrs={"data-automation": "job-detail-location"})
+                department_el = detail_soup.find("span", attrs={"data-automation": "job-detail-classifications"})
+                emp_el = detail_soup.find("span", attrs={"data-automation": "job-detail-work-type"})
+                salary_el = detail_soup.find("span", attrs={"data-automation": "job-detail-salary"})
+                posted_el = get_date(response)
+                # Extract Raw Description Text
+                desc_el = detail_soup.find(attrs={"data-automation": "jobAdDetails"})
+                full_desc = desc_el.text.strip() if desc_el else ""
 
         # if no response from description page skip job (dont write to file)
         else:
