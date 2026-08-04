@@ -118,17 +118,18 @@ This allows the AI enrichment process to be incremental. Jobs that have already 
 
 ### LLM
 
-I am using groq's api to get free LLM models:
+Job descriptions are processed using a Groq-hosted LLM models, did some testing to find the best free models for my project.Taking into account the output of the models and their rate limits. The tested LLMs are:
+
 1. Llama 3.1 8B
 2. Llama 3.3 70B
 3. qwen/qwen3.6-27b
 4. openai/gpt-oss-120b
 5. openai/gpt-oss-20b
 
-I decided to use the openai/gpt-oss-120b as the outputs followed my prompts more accurately and has better rate limits than Llama 3.3 70B
+GPT-OSS 120B was selected based on its ability to follow strict extraction constraints and avoid inferring skills or requirements that were not explicitly stated.
 
 ## Project Structure
-
+TBD
 ## Setup & Installation
 TBD
 ## Usage
