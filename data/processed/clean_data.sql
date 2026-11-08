@@ -142,9 +142,8 @@ SELECT
     posting_date,
     job_description
 
-FROM standardized_jobs;
-ON CONFLICT 
-DO NOTHING;
+FROM standardized_jobs
+ON CONFLICT (source, job_id) DO NOTHING;
 
 
 
