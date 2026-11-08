@@ -5,37 +5,43 @@ import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
 from groq import Groq
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    filename="ai_enrichment.log",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"), max_retries=0)
 POSTGRES_USER = os.environ.get("POSTGRES_USER")
 POSTGRES_PASS = os.environ.get("POSTGRES_PASS")
 
 BATCH_SIZE = 5
 
-EXTRACTION_PROMPT = """Extract skills and requirements from each job posting below. Return JSON matching the schema, with one result per job_index.
+EXTRACTION_INSTRUCTIONS = """You are an information extraction assistant specializing in job postings.
 
-SKILLS: technical tools, languages, frameworks, databases, platforms, methodologies explicitly mentioned. No soft skills like communication/teamwork - put those under requirements if explicitly required. Normalize names ("SQL" not "SQL skills", "Power BI" not "Microsoft Power BI"). No duplicates, no invented or implied skills.
+For each job below, extract its skills and requirements. Return JSON matching the schema, with one result per job_index.
+
+SKILLS: technical tools, languages, frameworks, databases, platforms, methodologies explicitly mentioned. No soft skills like communication/teamwork - put those under requirements if explicitly required. Normalize names ("SQL" not "SQL skills", "Power BI" not "Microsoft Power BI"). No duplicates, no invented or implied skills - only extract what's explicitly supported by the description, never inferred from job title, responsibilities, or industry norms.
 
 REQUIREMENTS: explicit candidate requirements only (experience, education, certifications, language, eligibility), rewritten as concise standalone statements. Do not copy the description text or include job responsibilities. No invented requirements.
 
-Use an empty list for either field if nothing qualifies.
-
-Jobs:
-{jobs_block}
-"""
+Use an empty list for either field if nothing qualifies."""
 
 
 class JobExtraction(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     job_index: int
     skills: list[str]
     requirements: list[str]
 
 
 class BatchExtraction(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     results: list[JobExtraction]
 
 
@@ -85,11 +91,27 @@ def ai_enrichment(ai_model, limit=None):
             completion = client.chat.completions.create(
                 model=ai_model,
                 messages=[
-                    {"role": "user", "content": EXTRACTION_PROMPT.format(jobs_block=jobs_block)}
+                    {"role": "system", "content": EXTRACTION_INSTRUCTIONS},
+                    {"role": "user", "content": f"Jobs:\n{jobs_block}"}
                 ],
-                response_format={"type": "json_object", "schema": BatchExtraction.model_json_schema()},
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "batch_extraction_schema",
+                        "strict": True,
+                        "schema": BatchExtraction.model_json_schema()
+                    }
+                },
                 temperature=0.1,
+                reasoning_effort="low",
             )
+
+            usage = completion.usage
+            logger.info(
+                f"Batch tokens - prompt: {usage.prompt_tokens}, "
+                f"completion: {usage.completion_tokens}"
+            )
+
             parsed = BatchExtraction.model_validate_json(completion.choices[0].message.content)
         except (ValidationError, json.JSONDecodeError) as e:
             logger.error(f"Batch returned invalid structure, skipping batch: {e}")
@@ -139,5 +161,4 @@ def ai_enrichment(ai_model, limit=None):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     ai_enrichment("openai/gpt-oss-120b", limit=5)
