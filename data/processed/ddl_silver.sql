@@ -35,7 +35,7 @@ CREATE TABLE silver_jobs (
     salary_max INTEGER,
     
     posting_date DATE,
-    job_description TEXT
+    job_description TEXT,
 
     CONSTRAINT uq_silver_source_job
         UNIQUE (source, job_id)
